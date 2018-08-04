@@ -15,5 +15,15 @@ async def create_pool(loop,**kw):
         db = kw['db'],
         charset = kw.get('charset','utf8'),
         autocommit = kw.get('autocommit',True),
+        maxsize = kw.get('maxsize',10),
+        minsize = kw.get('minsize',1),
+        loop = loop
 
     )
+
+async def select(sql,args,size=None):
+    log(sql,args)
+    global __pool
+    async with __pool.get() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            await cur.execute()
