@@ -88,3 +88,82 @@ def create_args_string(num):
         L.append('?')
     return '?'.join(L)
 
+class Field(object):
+    def __init__(self,name,column_type,primary_key,default):
+        self.name = name
+        self.column_type = column_type
+        self.primary_key = primary_key
+        self.default = default
+
+    def __str__(self):
+        return '<%s,%s:%s>' % (self.__class__.__name__,self.column_type,self.name)
+
+class StringField(Field):
+    def  __init__(self,name=None,primary_key=False,default=None,ddl='varchar(100)'):
+        super().__init__(name,ddl,primary_key,default)
+
+
+class BooleanField(Field):
+    def __int__(self,name=None,default=False):
+        super().__init__(name,'boolean',False,default)
+
+class IntegerField(Field):
+    def __init__(self,name=None,primary_key=False,default=0):
+        super().__init__(name,'bigint',primary_key,default)
+
+class FloatField(Field):
+    def __init__(self,name=None,primary_key=False,default=0.0):
+        super().__init__(name,'real',primary_key,default)
+
+class TextField(Field):
+    def __init__(self,name=None,default=None):
+        super().__init__(name,'text',False,default)
+
+class ModelMetaclass(type):
+    def __new__(cls, name,bases,attrs):
+        '''
+        创建模型与表映射的基类
+        :param name: 类名
+        :param bases: 父类
+        :param attrs: 类的属性列表
+        :return: 模型元类
+        '''
+        #排除Model类本身
+        if name=='Model':
+            return type.__new__(cls,name,bases,attrs)
+        #获取表名，如果没有表名则将类名作为表名
+        tableName = attrs.get('__table__',None) or name
+        logging.info('found model: %s (table: %s)' % (name,tableName))
+        #获取所有的类属性和主键名
+        mappings = dict()  #存储属性名和字段信息的映射关系
+        fields = []       #存储所有非主键的属性
+        primaryKey = None   #存储主键属性
+        for k,v in attrs.items():  #遍历类的所有属性，k为属性名，v为该属性对应的字段信息
+            if isinstance(v,Field):  #如果v是自己定义的字段类型
+                logging.info('found mappings:%s ==> %s' % (k,v))
+                mappings[k] = v  #存储映射关系
+                if v.primary_key: #如果该属性是主键（看上面Field，有个primary_key的“属性”
+                    #找到主键
+                    if primaryKey:
+                        raise StandardError('Dupliacte primary key for field: %s' % k)  #主键重复
+                    primaryKey = k
+                else:  #不是主键，存储到fields中
+                    fields.append(k)
+        if not primaryKey:   #遍历了所有属性都没有找到主键，则主键没有定义
+            raise StandardError('Primary key not found')
+        for k in mappings.keys():
+            attrs.pop(k)     #清空attrs
+        #将fields中属性名以“属性名”的方式 装饰起来
+        escaped_fields = list(map(lambda f: '`%s`' % f,fields ))
+        #重新设置attrs【确实是重新设置了，散的集中起来只剩四项了
+        attrs['__mappings__'] = mappings #保存属性和列的映射关系
+        attrs['__table__'] = tableName
+        attrs['__primary_key__'] = primaryKey #主键属性名
+        attrs['__fields__'] = fields #除主键外的属性名
+
+        #构造默认的select等语句
+        attrs['__select__'] = 'select `%s`,%s from `%s`' % (primaryKey,','.join(escaped_fields),tableName)
+        attrs['__insert__'] = 'insert into `%s` (%s,`%s`) values (%s)' % (tableName,','.join(escaped_fields),primaryKey,create_args_string(len(escaped_fields) + 1))
+        attrs['__update__'] = 'update `%s` set %s where `%s`=?' %  (tableName,','.join(map(lambda f:'`%s`=?' % (mappings.get(f).name or f),fields)),primaryKey)
+        attrs['__delete__'] = 'delete from `%s` where `%s` = ?' % (tableName,primaryKey)
+        return type.__new__(cls,name,bases,attrs)
