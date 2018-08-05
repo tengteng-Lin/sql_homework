@@ -186,7 +186,7 @@ class Model(dict,metaclass=ModelMetaclass):
 
     def getValueOrDefault(self,key):
         value = getattr(self,key,None)
-        if value is None:
+        if value is None: #如果没有找到value，也就是说不是外面的“大的”属性
             #在mappings里找到这个属性
             field = self.__mappings__[key]  #Model的父类是ModelMetaclass，所以“属性”里自然有mappings
             if field.default is not None:
@@ -195,10 +195,17 @@ class Model(dict,metaclass=ModelMetaclass):
                 setattr(self,key,value)
         return value
 
-    @classmethod
-    async def findAll(cls,where=None,args=None,**kw):
+    @classmethod #可以通过类来进行调用
+    async def findAll(cls,where=None,args=None,**kw):  #普通方法第一个参数为self，表示一个具体的实例本身；用@classmethod标识的方法第一个参数是cls，表示这个类本身
+        '''
+        通过where查找多条记录对象
+        :param where: where查询条件
+        :param args: sql参数   
+        :param kw: 查询条件列表
+        :return: 多条记录集合
+        '''
         'find objects by where clause'
-        sql = [cls.__select__]
+        sql = [cls.__select__]  #__select__在ModelMetaclass的属性列表里面
         if where:
             sql.append('where')
             sql.append(where)
@@ -210,17 +217,17 @@ class Model(dict,metaclass=ModelMetaclass):
             sql.append(orderBy)
         limit = kw.get('limit',None)
         if limit is not None:
-            sql.append('limit')
+            sql.append('limit')  #limit是返回的数目
             if isinstance(limit,int):
                 sql.append('?')
-                args.append(limit)
+                args.append(limit)  #没错，在sql语句上加limit ？就可以了，在args（参数）上加上具体的数目
             elif isinstance(limit,tuple) and len(limit) == 2:
                 sql.append('?,?')
                 args.extend(limit)
             else:
                 raise ValueError('Invalid limit value: %s' % str(limit))
-        rs=await select(' '.join(sql),args)
-        return [cls(**r) for r in rs]
+        rs=await select(' '.join(sql),args)   #返回形式是一个元素是tuple的list
+        return [cls(**r) for r in rs]  #  **r是关键字参数，构成了一个cls类的列表，其实就是每一条记录对应的实例
 
 @classmethod
 async def findNumber(cls,selectField,where=None,args=None):
