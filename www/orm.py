@@ -231,8 +231,16 @@ class Model(dict,metaclass=ModelMetaclass):
 
 @classmethod
 async def findNumber(cls,selectField,where=None,args=None):
+    '''
+    查询某个字段的数量
+    :param cls: 
+    :param selectField: 要查询的字段
+    :param where: 查询条件
+    :param args: 参数列表
+    :return:数量 
+    '''
     'find number by select and where'
-    sql = ['select %s _num_ from `%s`' % (selectField,cls.__table__) ]
+    sql = ['select count(%s) _num_ from `%s`' % (selectField,cls.__table__) ]
     if where:
         sql.append('where')
         sql.append(where)
@@ -243,6 +251,12 @@ async def findNumber(cls,selectField,where=None,args=None):
 
 @classmethod
 async def find(cls,pk):
+    '''
+    通过主键查询
+    :param cls: 
+    :param pk: 主键
+    :return: 一条记录
+    '''
     'find object by primary key'
     rs = await select('%s where `%s` = ?' % (cls.__select__,cls.__primary_key__),[pk],1)
     if len(rs)==0:
@@ -257,9 +271,14 @@ async def save(self):
         logging.warn('failed to insert record:affected rows: %s' % rows)
 
 async def update(self):
+    '''
+    将__fields__保存的除主键外的所有属性一次传递到getValueOrDefault函数中获取值
+    :param self: 
+    :return: 
+    '''
     args = list(map(self.getValue,self.__fields__))
-    args.append(self.getValue(self.__primary_key__))
-    rows = await execute(self.__update__,args)
+    args.append(self.getValue(self.__primary_key__))  #获取主键值
+    rows = await execute(self.__update__,args)  #执行insert语句
     if rows != 1:
         logging.warn('failed to update by primary key: affected rows: %s' % rows)
 
