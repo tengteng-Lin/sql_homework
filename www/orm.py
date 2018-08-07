@@ -263,7 +263,7 @@ async def find(cls,pk):
         return None
     return cls(**rs[0])
 
-async def save(self):
+async def save(self):   #会自动‘计算’缺省值
     args = list(map(self.getValueOrDefault,self.__fields__))
     args.append(self.getValueOrDefault(self.__primary_key__))
     rows = await execute(self.__insert__,args)
