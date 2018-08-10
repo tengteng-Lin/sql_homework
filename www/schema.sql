@@ -10,7 +10,8 @@ create table users(
     `UserID` VARCHAR (18) NOT NULL ,
     `User` VARCHAR (50) NOT NULL ,
     `Sex` VARCHAR (50),
-    `Phone` INT NOT NULL
+    `Phone` INT NOT NULL,
+    PRIMARY KEY (`UserID`)
 )engine=innodb DEFAULT charset=utf8;
 
 CREATE TABLE buses(
@@ -20,7 +21,8 @@ CREATE TABLE buses(
     `BusDate` FLOAT NOT NULL,
     `BusEnd` FLOAT not NULL,
     `TicketNum` int NOT NULL,
-    `Price` INT NOT NULL
+    `Price` INT NOT NULL,
+    PRIMARY KEY (`BusID`,`BusDate`)
 )engine=innodb DEFAULT charset=utf8;
 
 CREATE TABLE orders(
@@ -30,5 +32,6 @@ CREATE TABLE orders(
     `BusDate` FLOAT NOT NULL ,
     `OrderDate` FLOAT NOT NULL ,
     `OrderNum` FLOAT NOT NULL ,
-    `Total` FLOAT NOT NULL
+    `Total` FLOAT NOT NULL,
+    PRIMARY KEY (`OrderID`)
 )engine=innodb DEFAULT charset=utf8
