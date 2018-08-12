@@ -3,15 +3,16 @@ import time,uuid
 from orm import Model,StringField,BooleanField,FloatField,TextField,IntegerField
 
 def next_id():
+    #print('%015d%s000' % (int(time.time() * 1000),uuid.uuid4().hex))
     return '%015d%s000' % (int(time.time() * 1000),uuid.uuid4().hex)
 
 class User(Model):
     __table__ = 'users'
 
-    UserID = IntegerField(primary_key=True,default=next_id,ddl='char(18)')
+    UserID = StringField(primary_key=True,default=next_id,ddl='char(50)')
     User = StringField(ddl='varchar(50)')
     Sex = StringField(ddl='varchar(50)')
-    Phone = IntegerField()
+    Phone = StringField(ddl='char(11)')
 
 class Bus(Model):
     __table__ = 'buses'

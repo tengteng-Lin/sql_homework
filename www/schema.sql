@@ -7,10 +7,10 @@ use awesome;
 grant select, insert, update, delete on awesome.* to 'www-data'@'localhost' identified by 'www-data';
 
 create table users(
-    `UserID` VARCHAR (18) NOT NULL ,
+    `UserID` VARCHAR (50) NOT NULL ,
     `User` VARCHAR (50) NOT NULL ,
     `Sex` VARCHAR (50),
-    `Phone` INT NOT NULL,
+    `Phone` CHAR (11),
     PRIMARY KEY (`UserID`)
 )engine=innodb DEFAULT charset=utf8;
 

@@ -1,10 +1,12 @@
 import orm
 from models import User,Bus,Order
+import asyncio
 
 async def test(loop):
-    await orm.create_pool(loop,user='www-data',password='www-data',database='awesome')
+    await orm.create_pool(loop,user='www-data',password='www-data',db='awesome')
 
     u=User(User='测试',Sex='female',Phone='12345678901')
+
 
     await u.save()
 

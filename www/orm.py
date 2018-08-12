@@ -66,7 +66,8 @@ async def execute(sql,args,autocommit=True):
             await conn.begin() #python中连接对象开始一个事务的方法
         try:
             async with conn.cursor(aiomysql.DictCursor) as cur:
-                await cur.execute(sql.replace('?','%s'),args)
+                print(sql.replace('?', '%s'))
+                await cur.execute(sql.replace('?', '%s'), args)
                 affected = cur.rowcount #获取操作记录数
             if not autocommit:
                 await conn.commit()
@@ -86,7 +87,7 @@ def create_args_string(num):
     L = []
     for n in range(num):
         L.append('?')
-    return '?'.join(L)
+    return ','.join(L)
 
 class Field(object):
     def __init__(self,name,column_type,primary_key,default):
@@ -163,7 +164,7 @@ class ModelMetaclass(type):
 
         #构造默认的select等语句
         attrs['__select__'] = 'select `%s`,%s from `%s`' % (primaryKey,','.join(escaped_fields),tableName)
-        attrs['__insert__'] = 'insert into `%s` (%s,`%s`) values (%s)' % (tableName,','.join(escaped_fields),primaryKey,create_args_string(len(escaped_fields) + 1))
+        attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values (%s)' % (tableName, ', '.join(escaped_fields), primaryKey, create_args_string(len(escaped_fields) + 1))
         attrs['__update__'] = 'update `%s` set %s where `%s`=?' %  (tableName,','.join(map(lambda f:'`%s`=?' % (mappings.get(f).name or f),fields)),primaryKey)
         attrs['__delete__'] = 'delete from `%s` where `%s` = ?' % (tableName,primaryKey)
         return type.__new__(cls,name,bases,attrs)
@@ -229,63 +230,66 @@ class Model(dict,metaclass=ModelMetaclass):
         rs=await select(' '.join(sql),args)   #返回形式是一个元素是tuple的list
         return [cls(**r) for r in rs]  #  **r是关键字参数，构成了一个cls类的列表，其实就是每一条记录对应的实例
 
-@classmethod
-async def findNumber(cls,selectField,where=None,args=None):
-    '''
-    查询某个字段的数量
-    :param cls: 
-    :param selectField: 要查询的字段
-    :param where: 查询条件
-    :param args: 参数列表
-    :return:数量 
-    '''
-    'find number by select and where'
-    sql = ['select count(%s) _num_ from `%s`' % (selectField,cls.__table__) ]
-    if where:
-        sql.append('where')
-        sql.append(where)
-    rs = await select(' '.join(sql),args,1)
-    if len(rs) == 0:
-        return None
-    return rs[0]['_num_']
+    @classmethod
+    async def findNumber(cls,selectField,where=None,args=None):
+        '''
+        查询某个字段的数量
+        :param cls: 
+        :param selectField: 要查询的字段
+        :param where: 查询条件
+        :param args: 参数列表
+        :return:数量 
+        '''
+        'find number by select and where'
+        sql = ['select count(%s) _num_ from `%s`' % (selectField,cls.__table__) ]
+        if where:
+            sql.append('where')
+            sql.append(where)
+        rs = await select(' '.join(sql),args,1)
+        if len(rs) == 0:
+            return None
+        return rs[0]['_num_']
 
-@classmethod
-async def find(cls,pk):
-    '''
-    通过主键查询
-    :param cls: 
-    :param pk: 主键
-    :return: 一条记录
-    '''
-    'find object by primary key'
-    rs = await select('%s where `%s` = ?' % (cls.__select__,cls.__primary_key__),[pk],1)
-    if len(rs)==0:
-        return None
-    return cls(**rs[0])
+    @classmethod
+    async def find(cls,pk):
+        '''
+        通过主键查询
+        :param cls: 
+        :param pk: 主键
+        :return: 一条记录
+        '''
+        'find object by primary key'
+        rs = await select('%s where `%s` = ?' % (cls.__select__,cls.__primary_key__),[pk],1)
+        if len(rs)==0:
+            return None
+        return cls(**rs[0])
 
-async def save(self):   #会自动‘计算’缺省值
-    args = list(map(self.getValueOrDefault,self.__fields__))
-    args.append(self.getValueOrDefault(self.__primary_key__))
-    rows = await execute(self.__insert__,args)
-    if rows != 1:
-        logging.warn('failed to insert record:affected rows: %s' % rows)
+    async def save(self):   #会自动‘计算’缺省值
+        print(self)
+        args = list(map(self.getValueOrDefault,self.__fields__))
+        print('args'+str(args))
+        args.append(self.getValueOrDefault(self.__primary_key__))
+        print(self.__insert__)
+        rows = await execute(self.__insert__, args)
+        if rows != 1:
+            logging.warn('failed to insert record:affected rows: %s' % rows)
 
-async def update(self):
-    '''
-    将__fields__保存的除主键外的所有属性一次传递到getValueOrDefault函数中获取值
-    :param self: 
-    :return: 
-    '''
-    args = list(map(self.getValue,self.__fields__))
-    args.append(self.getValue(self.__primary_key__))  #获取主键值
-    rows = await execute(self.__update__,args)  #执行insert语句
-    if rows != 1:
-        logging.warn('failed to update by primary key: affected rows: %s' % rows)
+    async def update(self):
+        '''
+        将__fields__保存的除主键外的所有属性一次传递到getValueOrDefault函数中获取值
+        :param self: 
+        :return: 
+        '''
+        args = list(map(self.getValue,self.__fields__))
+        args.append(self.getValue(self.__primary_key__))  #获取主键值
+        rows = await execute(self.__update__,args)  #执行insert语句
+        if rows != 1:
+            logging.warn('failed to update by primary key: affected rows: %s' % rows)
 
-async def remove(self):
-    args = [self.getValue(self.__primary_key__)]
-    rows = await execute(self.__delete__,args)
-    if rows!=1:
-        logging.warn('failed to remove by primary key: affected rows:%s' % rows)
+    async def remove(self):
+        args = [self.getValue(self.__primary_key__)]
+        rows = await execute(self.__delete__,args)
+        if rows!=1:
+            logging.warn('failed to remove by primary key: affected rows:%s' % rows)
 
 
