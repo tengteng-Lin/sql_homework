@@ -13,8 +13,8 @@ def get(path):
     '''
 
     def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args,**kw):
+        @functools.wraps(func)  #保证装饰器不会对被装饰函数造成影响
+        def wrapper(*args,**kw):  #装饰函数
             return func(*args,**kw)
         wrapper.__method__ = 'GET'
         wrapper.__route__ = path
@@ -39,9 +39,10 @@ def post(path):
         return wrapper
     return decorator
 
+#运用inspect模块，创建几个函数用于获取URL处理函数与request参数之间的关系
 def get__required_kw_args(fn):
     '''
-    
+    收集没有默认值的命名关键字参数
     :param fn: 
     :return: 
     '''
@@ -84,7 +85,7 @@ def has_request_arg(fn):
             raise ValueError('request parameter must be the last named parameter in function:%s%s' % (fn.__name__,str(sig)))
     return found
 
-class RequestHandler(object):
+class RequestHandler(object):   #从URL函数中分析其需要接收的参数，从request中获取必要的参数，调用URL函数
     def __init__(self,app,fn):
         self._app = app
         self._func = fn
