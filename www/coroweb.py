@@ -16,8 +16,8 @@ def get(path):
         @functools.wraps(func)  #保证装饰器不会对被装饰函数造成影响
         def wrapper(*args,**kw):  #装饰函数
             return func(*args,**kw)
-        wrapper.__method__ = 'GET'
-        wrapper.__route__ = path
+        wrapper.__method__ = 'GET'  #存储方法信息
+        wrapper.__route__ = path  #存储路径信息
         return wrapper
     return decorator
 
@@ -47,13 +47,15 @@ def get__required_kw_args(fn):
     :return: 
     '''
     args = []
-    params = inspect.signature(fn).parameters
+    params = inspect.signature(fn).parameters  #获取函数fn的参数
     for name,param in params.items():
-        if param.kind == inspect.Parameter.KEYWORD_ONLY and param.default == inspect.Parameter.empty:
+        if param.kind == inspect.Parameter.KEYWORD_ONLY and param.default == inspect.Parameter.empty:   #找到没有默认值的所有仅关键字参数
+            #kind描述参数值如何绑定到参数  KEYWORD_ONLY值必须作为关键字参数提供。仅关键字参数是出现在python函数定义中的条目*或*args条目之后的参数
+            #default描述参数的默认值
             args.append(name)
     return tuple(args)
 
-def get_named_kw_args(fn):
+def get_named_kw_args(fn):  #获取命名关键字参数
     args = []
     params = inspect.signature(fn).parameters
     for name,param in params.items():
@@ -61,19 +63,20 @@ def get_named_kw_args(fn):
             args.append(name)
     return tuple(args)
 
-def has_named_kw_args(fn):
+def has_named_kw_args(fn):  #判断有没有命名关键字参数
     params = inspect.signature(fn).parameters
     for name,param in params.items():
         if param.kind == inspect.Parameter.KEYWORD_ONLY:
             return True
 
-def has_var_kw_arg(fn):
+def has_var_kw_arg(fn):  #判断有没有关键字参数
     params = inspect.signature(fn).parameters
     for name, param in params.items():
         if param.kind == inspect.Parameter.VAR_KEYWORD:
+            # VAR_KEYWORD  不绑定到任何其他参数的关键字参数的字典。这对应**kwargs于python函数定义中的参数
             return True
 
-def has_request_arg(fn):
+def has_request_arg(fn):  #判断是否含有名为‘request’参数，且该参数是否为最后一个参数
     sig = inspect.signature(fn)
     params = sig.parameters
     found = False
@@ -82,11 +85,14 @@ def has_request_arg(fn):
             found = True
             continue
         if found and (param.kind != inspect.Parameter.VAR_POSITIONAL and param.kind != inspect.Parameter.KEYWORD_ONLY and param.kind != inspect.Parameter.VAR_KEYWORD):
+            # VAR_POSITIONAL一个未绑定到任何其他参数的位置参数元组。这对应*args于python函数定义中的参数
             raise ValueError('request parameter must be the last named parameter in function:%s%s' % (fn.__name__,str(sig)))
     return found
 
+
+
 class RequestHandler(object):   #从URL函数中分析其需要接收的参数，从request中获取必要的参数，调用URL函数
-    def __init__(self,app,fn):
+    def __init__(self,app,fn):  #接受app参数
         self._app = app
         self._func = fn
         self._has_request_arg = has_request_arg(fn)
