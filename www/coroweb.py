@@ -101,33 +101,34 @@ class RequestHandler(object):   #从URL函数中分析其需要接收的参数�
         self._named_kw_args = get_named_kw_args(fn)
         self._required_kw_args = get__required_kw_args(fn)
 
-    async def __call__(self, request):
+    async def __call__(self, request):  #构造协程
         kw = None
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
             if request.method == 'POST':
-                if not request.content_type:
-                    return web.HTTPBadRequest('Missing Content-type')
+                if not request.content_type:  #查询有没有提交数据的格式
+                    return web.HTTPBadRequest(text='Missing Content-type')
                 ct = request.content_type.lower()
                 if ct.startwith('application/json'):
-                    params = await request.json()
+                    params = await request.json()  #read request body decoded asjson
                     if not isinstance(params,dict):
-                        return web.HTTPBadRequest('JSON body must be object')
+                        return web.HTTPBadRequest(text='JSON body must be object')
                     kw = params
                 elif ct.startwith('application/x-www-form-urlencoded') or ct.startwith('multipart/form-data'):
-                    params = await request.post()
+                    params = await request.post()  #reads POST parameters from request body.If method is not POST,PUT,PATCH,TEACE or DELETE or content_type is not empty or application/x-www-form-urlencoded or multipart/form-data returns empty multidict.
                     kw = dict(**params)
                 else:
-                    return web.HTTPBadRequest('Unsupported Content-Type:%s' % request.content_type)
+                    return web.HTTPBadRequest(text='Unsupported Content-Type:%s' % (request.content_type))
             if request.method == 'GET':
-                qs = request.query_string
+                qs = request.query_string  #The query string in the URL
                 if qs:
                     kw = dict()
-                    for k,v in parse.parse_qs(qs,True).items():
+                    for k,v in parse.parse_qs(qs,True).items():  #parse a query string given as a string argument.Data are returned as a dictionary. The dictionary keys are the unique query variable names and the values are lists of values for each name.
+                        #parse.parse_qs   分析http查询字符串，返回字典格式
                         kw[k] = v[0]
         if kw is None:
             kw = dict(**request.match_info)
         else:
-            if not self._has_var_kw_arg and self._named_kw_args:
+            if not self._has_var_kw_arg and self._named_kw_args:  #但函数参数没有关键字参数时，移去request除命名关键字参数所有的参数信息
                 #remove all unamed kw
                 copy = dict()
                 for name in self._named_kw_args:
