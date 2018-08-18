@@ -1,8 +1,17 @@
 import logging;logging.basicConfig(level=logging.INFO)
 import asyncio,os,json,time  #asyncio的编程模型就是一个消息循环。我们从asyncio模块中直接获取一个EventLoop的引用，然后把需要执行的协程扔到EventLoop中执行，就实现了异步IO
 from datetime import datetime
-
 from aiohttp import web #基于协程的异步模型    异步编程的原则：一旦确定使用异步，则系统的每一层都要异步
+from jinja2 import Environment,FileSystemLoader
+import orm
+from coroweb import add_routes,add_static
+
+def init_jinja2(app,**kw):
+    logging.info('init jinja2')
+    options = dict(
+        autoescape = kw.get('autoescape',True),
+        block_start_string = kw.get('block_start_string','{%')
+    )
 
 def index(request):  #requeset包含了浏览器发送过来的http协议的信息，一般不用自己构造
     return web.Response(body=b'<h1>awesome</h1>')   #构造一个http相应  类声明 class aiohttp.web.Response(*, status=200, headers=None, content_type=None, body=None, text=None)

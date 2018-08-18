@@ -160,20 +160,40 @@ def add_static(app):
     app.router.add_static('/static/',path)
     logging.info('add static %s => %s' % ('/static/',path))
 
+
 def add_route(app,fn):
+    '''
+    用来注册一个URL处理函数
+    :param app: 
+    :param fn: 
+    :return: 
+    '''
     method = getattr(fn,'__method__',None)
     path = getattr(fn,'route',None)
     if path is None or method is None:
         raise ValueError('@get or @post not defined in %s.' % str(fn))
-    if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):
+    if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):   #判断是否为协程且生成器，不是使用isinstance
         fn = asyncio.coroutine(fn)
     logging.info('add route %s %s => %s(%s)' % (method,path,fn.__name__,','.join(inspect.signature(fn).parameters.keys())))
     app.router.add_route(method,path,RequestHandler(app,fn))
 
 def add_routes(app,moudle_name):
-    n = moudle_name.rfind('.')
+    '''
+    可以批量注册的函数，只需向这个函数提供要批量注册函数的文件路径，新编写的函数就会筛选，注册文件内所有符合注册条件的函数
+    :param app: 
+    :param moudle_name: 
+    :return: 
+    '''
+    n = moudle_name.rfind('.')  #rfind（）返回字符串最后一次出现的位置（从右向左查询），如果没有匹配项则返回-1
+    '''
+    返回'.'最后出现的位置
+    如果为-1，说明是 module_name中不带'.',例如(只是举个例子) handles 、 models
+    如果不为-1,说明 module_name中带'.',例如(只是举个例子) aiohttp.web 、 urlib.parse()    n分别为 7 和 5 
+    我们在app中调用的时候传入的module_name为handles,不含'.',if成立, 动态加载module
+
+    '''
     if n == (-1):
-        mod = __import__(moudle_name,globals(),locals())
+        mod = __import__(moudle_name,globals(),locals())   #用于动态加载类和函数
     else:
         name = moudle_name[n+1:]
         mod = getattr(__import__(moudle_name[:n],globals(),locals(),[name]),name)
