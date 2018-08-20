@@ -148,40 +148,40 @@ def datetime_filter(t):
     dt = datatime.fromtimestamp(t)
     return u'%s年%s月%s日' % (dt.year,dt.month,dt.day)
 
-async def init(loop):
-    '''
-    调用asyncio实现异步IO
-    :param loop: 
-    :return: 
-    '''
-    await orm.create_pool(loop=loop,host='127.0.0.1',post=3306,user='www',password='www',db='awesome') #创建数据库连接池
-    app = web.Application(loop=loop,middlewares=[
-        logger_factory,response_factory
-    ])  #创建app对象，同时传入上文定义的拦截器middlewares
-    init_jinja2(app,filters=dict(datetime=datetime_filter))  #初始化jinja2模板，并传入时间过滤器
-    add_routes(app,'handlers')  #handlers指的是handlers模块也就是handlers.py
-    add_static(app)
-    srv = await loop.create_server(app.make_handler(),'127.0.0.1',9000)
-    logging.info('server started at http://127.0.0.1:9000...')
-    return srv
-
-#
-# def index(request):  #requeset包含了浏览器发送过来的http协议的信息，一般不用自己构造
-#     return web.Response(body=b'<h1>awesome</h1>')   #构造一个http相应  类声明 class aiohttp.web.Response(*, status=200, headers=None, content_type=None, body=None, text=None)
-#
-# #用asyncio提供的@asyncio.coroutine  可以把一个generator标记为coroutine类型，然后在内部用yield from调用另一个coroutine实现异步操作
-# #异步操作需要在coroutine中通过yield from完成，多个coroutine可以封装成一组Task然后并发执行
-# @asyncio.coroutine
-# def init(loop):
-#     app=web.Application(loop=loop)  #创建一个服务器app实例，作用是用来处理URL、http协议    【类声明见百度
-#     app.router.add_route('GET','/',index)  #使用app时，首先要将URLs 注册进router，再用aiohttp.RequestHandlerFactory作为协议簇创建套接字 ，该方法将处理函数与对应的URL绑定，浏览器敲击相应URL时会返回处理函数的内容
-#     srv = yield from loop.create_server(app.make_handler(),'127.0.0.1',9000)  #用协程创建监听服务，loop为传入函数的协程。 yield from返回一个创建好的，绑定IP、端口、HTTP协议簇的监听服务的协程。
-#     logging.info('server started at http://127.0.0.1:9000')
+# async def init(loop):
+#     '''
+#     调用asyncio实现异步IO
+#     :param loop:
+#     :return:
+#     '''
+#     await orm.create_pool(loop=loop,host='127.0.0.1',post=3306,user='root',password='password',db='awesome') #创建数据库连接池
+#     app = web.Application(loop=loop,middlewares=[
+#         logger_factory,response_factory
+#     ])  #创建app对象，同时传入上文定义的拦截器middlewares
+#     init_jinja2(app,filters=dict(datetime=datetime_filter))  #初始化jinja2模板，并传入时间过滤器
+#     add_routes(app,'handlers')  #handlers指的是handlers模块也就是handlers.py
+#     add_static(app)
+#     srv = await loop.create_server(app.make_handler(),'127.0.0.1',9000)
+#     logging.info('server started at http://127.0.0.1:9000...')
 #     return srv
-
-loop = asyncio.get_event_loop()  #创建协程
-loop.run_until_complete(init(loop))  #运行协程，直到完成
-loop.run_forever() #运行协程，直到调用stop
+#
+# #
+# # def index(request):  #requeset包含了浏览器发送过来的http协议的信息，一般不用自己构造
+# #     return web.Response(body=b'<h1>awesome</h1>')   #构造一个http相应  类声明 class aiohttp.web.Response(*, status=200, headers=None, content_type=None, body=None, text=None)
+# #
+# # #用asyncio提供的@asyncio.coroutine  可以把一个generator标记为coroutine类型，然后在内部用yield from调用另一个coroutine实现异步操作
+# # #异步操作需要在coroutine中通过yield from完成，多个coroutine可以封装成一组Task然后并发执行
+# # @asyncio.coroutine
+# # def init(loop):
+# #     app=web.Application(loop=loop)  #创建一个服务器app实例，作用是用来处理URL、http协议    【类声明见百度
+# #     app.router.add_route('GET','/',index)  #使用app时，首先要将URLs 注册进router，再用aiohttp.RequestHandlerFactory作为协议簇创建套接字 ，该方法将处理函数与对应的URL绑定，浏览器敲击相应URL时会返回处理函数的内容
+# #     srv = yield from loop.create_server(app.make_handler(),'127.0.0.1',9000)  #用协程创建监听服务，loop为传入函数的协程。 yield from返回一个创建好的，绑定IP、端口、HTTP协议簇的监听服务的协程。
+# #     logging.info('server started at http://127.0.0.1:9000')
+# #     return srv
+#
+# loop = asyncio.get_event_loop()  #创建协程
+# loop.run_until_complete(init(loop))  #运行协程，直到完成
+# loop.run_forever() #运行协程，直到调用stop
 
 
 
