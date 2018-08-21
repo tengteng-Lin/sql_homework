@@ -1,4 +1,4 @@
-import asyncio,os,inspect,logging,functools
+import asyncio,os,inspect,logging,functools   #functools高阶函数模块，提供常用的高阶函数，如wraps
 
 from urllib import parse
 from aiohttp import web
@@ -8,6 +8,8 @@ def get(path):
     '''
     Define decorator @get('/path')
     @get 装饰器，给处理函数绑定URL和HTTP method-GET的属性
+    这是个三层嵌套的装饰器，目的是可以在decorator本身传入参数
+    这个装饰器将一个函数映射为一个URL处理函数
     :param path: 
     :return: 
     '''
@@ -30,14 +32,16 @@ def post(path):
     :return: 
     '''
 
-    def decorator(func):
+    def decorator(func):  #传入参数是函数
+        #python内置的functools.wraps装饰器作用是把装饰后的函数的__name__属性变为原始的属性
+        #因为当使用装饰器后，函数的__name__属性会变为wrapper
         @functools.wraps(func)
         def wrapper(*args, **kw):
             return func(*args, **kw)
-        wrapper.__method__ = 'POST'
-        wrapper.__route__ = path
+        wrapper.__method__ = 'POST'  #给原始函数添加请求方法‘post’
+        wrapper.__route__ = path   #给原始函数添加请求路径path
         return wrapper
-    return decorator
+    return decorator    #这样，一个函数通过@post（path）的装饰就附带了URL信息
 
 #运用inspect模块，创建几个函数用于获取URL处理函数与request参数之间的关系
 def get__required_kw_args(fn):
@@ -63,13 +67,13 @@ def get_named_kw_args(fn):  #获取命名关键字参数
             args.append(name)
     return tuple(args)
 
-def has_named_kw_args(fn):  #判断有没有命名关键字参数
+def has_named_kw_args(fn):  #判断有没有关键字参数
     params = inspect.signature(fn).parameters
     for name,param in params.items():
         if param.kind == inspect.Parameter.KEYWORD_ONLY:
             return True
 
-def has_var_kw_arg(fn):  #判断有没有关键字参数
+def has_var_kw_arg(fn):  #判断有没有可变的关键词参数（**），如果有就输出True
     params = inspect.signature(fn).parameters
     for name, param in params.items():
         if param.kind == inspect.Parameter.VAR_KEYWORD:
@@ -90,7 +94,10 @@ def has_request_arg(fn):  #判断是否含有名为‘request’参数，且该�
     return found
 
 
-
+#定义RequestHandler类，封装url处理函数
+#RequestHandler的目的是从url函数中分析需要提取的参数，从request中获取必要的参数
+#调用url参数，将结果转换为web.response
+#fn就是handler中的函数
 class RequestHandler(object):   #从URL函数中分析其需要接收的参数，从request中获取必要的参数，调用URL函数
     '''
     1. __init__()的作用是初始化某个类的一个实例。 
@@ -99,36 +106,51 @@ class RequestHandler(object):   #从URL函数中分析其需要接收的参数�
     def __init__(self,app,fn):  #接受app参数
         self._app = app
         self._func = fn
+        #下面的属性是对传入的fn的参数的一些判断
         self._has_request_arg = has_request_arg(fn)
         self._has_var_kw_arg = has_var_kw_arg(fn)
         self._has_named_kw_args = has_named_kw_args(fn)
         self._named_kw_args = get_named_kw_args(fn)
         self._required_kw_args = get__required_kw_args(fn)
 
-    async def __call__(self, request):  #构造协程
-        kw = None
+    async def __call__(self, request):
+        kw = None  #假设不存在关键字参数
+        #如果fn的参数有可变的关键字参数或关键字参数
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
             if request.method == 'POST':
                 if not request.content_type:  #查询有没有提交数据的格式
                     return web.HTTPBadRequest(text='Missing Content-type')
                 ct = request.content_type.lower()
-                if ct.startwith('application/json'):
+                if ct.startwith('application/json'):  #表示消息主体是序列化后的json字符串
                     params = await request.json()  #read request body decoded asjson
-                    if not isinstance(params,dict):
-                        return web.HTTPBadRequest(text='JSON body must be object')
-                    kw = params
+                    if not isinstance(params,dict):   #如果读取出来的信息类型不是dict，
+                        return web.HTTPBadRequest(text='JSON body must be object') #那json对象一定有问题
+                    kw = params  #把读取出来的dict赋值给kw
+                #以下两种 content type都表示消息主体是表单
                 elif ct.startwith('application/x-www-form-urlencoded') or ct.startwith('multipart/form-data'):
-                    params = await request.post()  #reads POST parameters from request body.If method is not POST,PUT,PATCH,TEACE or DELETE or content_type is not empty or application/x-www-form-urlencoded or multipart/form-data returns empty multidict.
+                    #request.post方法从request  body读取post参数，即表单信息，并包装成字典赋给kw变量
+                    params = await request.post()
                     kw = dict(**params)
+                #post的消息主体既不是json对象，也不是浏览器表单，只能返回不支持该消息类型
                 else:
                     return web.HTTPBadRequest(text='Unsupported Content-Type:%s' % (request.content_type))
+
+
             if request.method == 'GET':
-                qs = request.query_string  #The query string in the URL
+                qs = request.query_string  #表示url中的查询字符串
+                # 比如我百度ReedSun，得到网址为https://www.baidu.com/s?ie=UTF-8&wd=ReedSun
+                # 其中‘ie=UTF-8&wd=ReedSun’就是查询字符串
                 if qs:
                     kw = dict()
                     for k,v in parse.parse_qs(qs,True).items():  #parse a query string given as a string argument.Data are returned as a dictionary. The dictionary keys are the unique query variable names and the values are lists of values for each name.
                         #parse.parse_qs   分析http查询字符串，返回字典格式
+                        # parse.parse_qs(qs, keep_blank_values=False, strict_parsing=False)函数的作用是解析一个给定的字符串
+                        # keep_blank_values默认为False，指示是否忽略空白值，True不忽略，False忽略
+                        # strict_parsing如果是True，遇到错误是会抛出ValueError错误，如果是False会忽略错误
+                        # 这个函数将返回一个字典，其中key是等号之前的字符串，value是等号之后的字符串但会是列表
+                        # 比如上面的例子就会返回{'ie': ['UTF-8'], 'wd': ['ReedSun']}
                         kw[k] = v[0]
+        #如果经过以上处理，kw是None，即上面if语句块没有被执行
         if kw is None:
             kw = dict(**request.match_info)
         else:
