@@ -151,38 +151,60 @@ class RequestHandler(object):   #从URL函数中分析其需要接收的参数�
                         # 比如上面的例子就会返回{'ie': ['UTF-8'], 'wd': ['ReedSun']}
                         kw[k] = v[0]
         #如果经过以上处理，kw是None，即上面if语句块没有被执行
+        #则获取请求的abstract math info（抽象数学信息），并以字典形式存入kw
+        #match_info主要是保存像@get('/blog/{id}')里面的id，就是路由路径里的参数
         if kw is None:
             kw = dict(**request.match_info)
         else:
-            if not self._has_var_kw_arg and self._named_kw_args:  #但函数参数没有关键字参数时，移去request除命名关键字参数所有的参数信息
+            # 如果经过以上处理了，kw不为空了，而且没有可变的关键字参数，但是有关键字参数
+            if not self._has_var_kw_arg and self._named_kw_args:
                 #remove all unamed kw
+                #剔除kw中kw中key不是fn的关键字参数的项
                 copy = dict()
                 for name in self._named_kw_args:
                     if name in kw:
                         copy[name] = kw[name]
                 kw = copy
             #check named arg:
+            #遍历request.match_info(abstract math info),再把abstract math info的值加入kw中
+            #若其key既存在于abstract math  info又存在于kw中，发出重复参数警告
             for k,v in request.match_info.items():
                 if k in kw:
                     logging.warning('Duplicate arg name in named arg and kw args:%s' % k)
                 kw[k] = v
+        #如果fn的参数有request，则再给kw中加上request的key和值
         if self._has_request_arg:
             kw['request'] = request
         #check required kw
         if self._required_kw_args:
             for name in self._required_kw_args:
+                #kw必须包含 全部没有默认值的关键字参数，如果发现遗漏则说明有参数没传入，报错
                 if not name in kw:
                     return web.HTTPBadRequest('Missing argument:%s' % name)
+        #以上过程即为从request中获得必要的参数，并组成kw
+
+
+        #以下调用handler处理，并返回response
         logging.info('call with args:%s' % str(kw))
         try:
-            r = await self._func(**kw)
+            r = await self._func(**kw)   # 执行handler模块里的函数
             return r
         except APIError as e:
             return dict(error=e.error,data=e.data,message=e.message)
 
 
 def add_static(app):
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'static')   #输出当前文件夹中’static‘的路径
+    '''
+    向app中添加静态文件目录
+    :param app: 
+    :return: 
+    '''
+
+    #os.path.abspath(__file__)，返回当前脚本的绝对路径（包括文件名）
+    #os.path.dirname()，去掉文件名，返回目录路径
+    #os.path.join()，将分离的各部分组合成一个路径名
+    #因此以下操作就是将本文件同目录下的static目录（即www/static/)加入到应用的路由管理器中
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'static')
     app.router.add_static('/static/',path)
     logging.info('add static %s => %s' % ('/static/',path))
 
@@ -200,10 +222,10 @@ def add_route(app,fn):
         # print(path,'路径')
         # print(method,'方法')
         raise ValueError('@get or @post not defined in %s.' % str(fn))
-    if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):   #判断是否为协程且生成器，不是使用isinstance
+    if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):   #判断是否为协程且生成器，不是则把这个函数变成协程
         fn = asyncio.coroutine(fn)
     logging.info('add route %s %s => %s(%s)' % (method,path,fn.__name__,','.join(inspect.signature(fn).parameters.keys())))
-    app.router.add_route(method,path,RequestHandler(app,fn))
+    app.router.add_route(method,path,RequestHandler(app,fn))   #注册request handler
 
 def add_routes(app,moudle_name):
     '''
