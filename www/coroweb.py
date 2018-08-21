@@ -92,6 +92,10 @@ def has_request_arg(fn):  #判断是否含有名为‘request’参数，且该�
 
 
 class RequestHandler(object):   #从URL函数中分析其需要接收的参数，从request中获取必要的参数，调用URL函数
+    '''
+    1. __init__()的作用是初始化某个类的一个实例。 
+    2. __call__()的作用是使实例能够像函数一样被调用，同时不影响实例本身的生命周期（__call__()不影响一个实例的构造和析构）。但是__call__()可以用来改变实例的内部成员的值。
+    '''
     def __init__(self,app,fn):  #接受app参数
         self._app = app
         self._func = fn
@@ -156,7 +160,7 @@ class RequestHandler(object):   #从URL函数中分析其需要接收的参数�
 
 
 def add_static(app):
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'static')
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'static')   #输出当前文件夹中’static‘的路径
     app.router.add_static('/static/',path)
     logging.info('add static %s => %s' % ('/static/',path))
 
@@ -169,8 +173,10 @@ def add_route(app,fn):
     :return: 
     '''
     method = getattr(fn,'__method__',None)
-    path = getattr(fn,'route',None)
+    path = getattr(fn,'__route__',None)
     if path is None or method is None:
+        # print(path,'路径')
+        # print(method,'方法')
         raise ValueError('@get or @post not defined in %s.' % str(fn))
     if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):   #判断是否为协程且生成器，不是使用isinstance
         fn = asyncio.coroutine(fn)
@@ -199,10 +205,12 @@ def add_routes(app,moudle_name):
         mod = getattr(__import__(moudle_name[:n],globals(),locals(),[name]),name)
     for attr in dir(mod):
         if attr.startswith('_'):
-            continue
+            continue  #排除私有属性
         fn  = getattr(mod,attr)
-        if callable(fn):
+        if callable(fn):  #查看提取出来的属性是不是函数
             method = getattr(fn,'__method__',None)
             path = getattr(fn,'__route__',None)
+            # print(method)
+            # print(path)
             if method and path:
                 add_route(app,fn)
