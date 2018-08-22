@@ -1,6 +1,8 @@
 import asyncio,logging
 import aiomysql
 
+
+
 def log(sql,args=()):
     logging.info('SQL: %s' % sql)
 
@@ -13,21 +15,24 @@ async def create_pool(loop,**kw):  #kw是一个dict
     :return: 无
     '''
     logging.info('create database connection pool...')
-    global __pool  #连接池由全局变量__pool 存储
+
+    global __pool
     #初始化连接池参数
     __pool = await aiomysql.create_pool(
-        host = kw.get('host','localhost'),  #get（）方法是dict的，如果有则返回，没有则返回第二个参数即默认值
-        port = kw.get('port',3306),
-        user = kw['user'],
-        password = kw['password'],
-        db = kw['db'],
-        charset = kw.get('charset','utf8'),
-        autocommit = kw.get('autocommit',True),
-        maxsize = kw.get('maxsize',10),
-        minsize = kw.get('minsize',1),
-        loop = loop
-
+        host=kw.get('host','localhost'),  #get（）方法是dict的，如果有则返回，没有则返回第二个参数即默认值
+        port=kw.get('port',3306),
+        user=kw['user'],
+        password=kw['password'],
+        db=kw['db'],
+        charset=kw.get('charset','utf8'),
+        autocommit=kw.get('autocommit',True),
+        maxsize=kw.get('maxsize',10),
+        minsize=kw.get('minsize',1),
+        loop=loop
     )
+
+    return
+
 
 async def select(sql,args,size=None):
     '''
@@ -61,6 +66,7 @@ async def execute(sql,args,autocommit=True):
     :return: 
     '''
     log(sql)
+
     async with __pool.get() as conn:
         if not autocommit:
             await conn.begin() #python中连接对象开始一个事务的方法
@@ -291,5 +297,3 @@ class Model(dict,metaclass=ModelMetaclass):
         rows = await execute(self.__delete__,args)
         if rows!=1:
             logging.warn('failed to remove by primary key: affected rows:%s' % rows)
-
-

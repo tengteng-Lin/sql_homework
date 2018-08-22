@@ -6,7 +6,7 @@ from aiohttp import web #基于协程的异步模型    异步编程的原则：
 #jinja2是仿照Django模板的配置环境，FileSystemLoader是文件系统加载器，用来加载模板路径
 from jinja2 import Environment,FileSystemLoader
 import orm
-from coroweb import add_routes,add_static
+from www.coroweb import add_static,add_routes
 
 
 def init_jinja2(app,**kw):
@@ -43,6 +43,7 @@ def init_jinja2(app,**kw):
             env.filters[name] = f  #在env中添加过滤器
     app['__templating__'] = env  #前面已经把jinja2的环境配置都赋值给env了，这里再把env存入app的dict中，这样app就知道要去哪里找模板，怎么解析模板
 
+
 async def logger_factory(app,handler):
     '''
     记录URL日志的logger   协程，两个参数
@@ -55,6 +56,7 @@ async def logger_factory(app,handler):
         logging.info('Request:%s %s' % (request.method,request.path))  #日志
         return (await handler(request))
     return logger
+
 
 
 async  def data_factory(app,handler):
@@ -112,7 +114,7 @@ async def response_factory(app,handler):
                 resp.content_type = 'application/json;charset=utf-8'
                 return resp
             else: #jinja2模板
-                resp = wen.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
+                resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp
         if isinstance(r,int) and r>=100 and r <600 :
@@ -145,25 +147,26 @@ def datetime_filter(t):
         return u'%s小时前' % (delta // 3600)
     if delta <604800:
         return u'%s天前' % (delta // 86400)
-    dt = datatime.fromtimestamp(t)
+    dt = datetime.fromtimestamp(t)
     return u'%s年%s月%s日' % (dt.year,dt.month,dt.day)
 
-# async def init(loop):
-#     '''
-#     调用asyncio实现异步IO
-#     :param loop:
-#     :return:
-#     '''
-#     await orm.create_pool(loop=loop,host='127.0.0.1',post=3306,user='root',password='password',db='awesome') #创建数据库连接池
-#     app = web.Application(loop=loop,middlewares=[
-#         logger_factory,response_factory
-#     ])  #创建app对象，同时传入上文定义的拦截器middlewares
-#     init_jinja2(app,filters=dict(datetime=datetime_filter))  #初始化jinja2模板，并传入时间过滤器
-#     add_routes(app,'handlers')  #handlers指的是handlers模块也就是handlers.py
-#     add_static(app)
-#     srv = await loop.create_server(app.make_handler(),'127.0.0.1',9000)
-#     logging.info('server started at http://127.0.0.1:9000...')
-#     return srv
+async def init(loop):
+    '''
+    调用asyncio实现异步IO
+    :param loop:
+    :return:
+    '''
+
+    await orm.create_pool(loop=loop, host='127.0.0.1', post=3306, user='root', password='password', db='awesome') # 创建数据库连接池
+    app = web.Application(loop=loop,middlewares=[
+        logger_factory,response_factory
+    ])  #创建app对象，同时传入上文定义的拦截器middlewares
+    init_jinja2(app,filters=dict(datetime=datetime_filter))  #初始化jinja2模板，并传入时间过滤器
+    add_routes(app,'handlers')  #handlers指的是handlers模块也就是handlers.py
+    add_static(app)
+    srv = await loop.create_server(app.make_handler(),'127.0.0.1',9000)
+    logging.info('server started at http://127.0.0.1:9000...')
+    return srv
 #
 # #
 # # def index(request):  #requeset包含了浏览器发送过来的http协议的信息，一般不用自己构造
@@ -179,9 +182,9 @@ def datetime_filter(t):
 # #     logging.info('server started at http://127.0.0.1:9000')
 # #     return srv
 #
-# loop = asyncio.get_event_loop()  #创建协程
-# loop.run_until_complete(init(loop))  #运行协程，直到完成
-# loop.run_forever() #运行协程，直到调用stop
+loop = asyncio.get_event_loop()  #创建协程
+loop.run_until_complete(init(loop))  #运行协程，直到完成
+loop.run_forever() #运行协程，直到调用stop
 
 
 
