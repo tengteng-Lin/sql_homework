@@ -1,18 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--
+{% macro pagination(url, page) %}
+    <ul class="uk-pagination">
+        {% if page.has_previous %}
+            <li><a href="{{ url }}{{ page.page_index - 1 }}"><i class="uk-icon-angle-double-left"></i></a></li>
+        {% else %}
+            <li class="uk-disabled"><span><i class="uk-icon-angle-double-left"></i></span></li>
+        {% endif %}
+            <li class="uk-active"><span>{{ page.page_index }}</span></li>
+        {% if page.has_next %}
+            <li><a href="{{ url }}{{ page.page_index + 1 }}"><i class="uk-icon-angle-double-right"></i></a></li>
+        {% else %}
+            <li class="uk-disabled"><span><i class="uk-icon-angle-double-right"></i></span></li>
+        {% endif %}
+    </ul>
+{% endmacro %}
+-->
+<html >
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8"/>
     {% block meta %}<!--block meta -->{% endblock %}
-    <title>{% block title %} ?{% endblock %} -购票系统- </title>
-    <link rel="stylesheet" href="/www/static/css/uikit.min.css">
-    <link rel="stylesheet" href="/www/static/css/uikit.gradient.min.css">
-    <link rel="stylesheet" href="/www/static/css/awesome.css">
-    <script src="/www/static/js/jquery.min.js"></script>
-    <script src="/www/static/js/sha1.min.js"></script>
-    <script src="/www/static/js/uikit.min.js"></script>
-    <script src="/www/static/js"></script>
+    <title>{% block title %} ?{% endblock %}-购票系统-</title>
+    <link rel="stylesheet" href="/static/css/uikit.min.css">      <!--因为加“/”的意思是根目录下的绝对路径，不加“/”的意思是当前目录下的相对路径。-->
+    <link rel="stylesheet" href="/static/css/uikit.gradient.min.css">   <!-- 绝对路径是指目录下的绝对位置,直接到达目标位置,通常是从盘符开始的路径。-->
+    <link rel="stylesheet" href="/static/css/awesome.css">     <!--相对路径就是指由这个文件所在的路径引起的跟其它文件(或文件夹)的路径关系。-->
+    <link rel="stylesheet" href="/static/css/components/search.css">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/sha1.min.js"></script>
+    <script src="/static/js/uikit.min.js"></script>
+    <script src="/static/js/components/sticky.min.js"></script>
+    <script src="/static/js/vue.min.js"></script>
+    <script src="/static/js/compoments/search.js"></script>
+    <script src="/static/js/awesome.js"></script>
+    {% block beforehead %}<!--before head -->{% endblock %}
 </head>
 <body>
+    <nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
+        <div class="uk-container uk-container-center">
+            <a href="/" class="uk-navbar-brand">购票系统</a>
+            <ul class="uk-navbar-nav">
+                <li data-url="tobuy"><a href="/"><i class="uk-icon-book"></i>购票</a></li>
+                <li><a target="_blank" href="__base__.html"><i class="uk-icon-check"></i>退票</a></li>
+            </ul>
+
+            <div class="uk-navbar-flip">
+                <ul class="uk-navbar-nav">
+                {% if __user__ %}
+                    <li class="uk-parent" data-uk-slideshow-slide>
+                        <a href="#0"><i class="uk-icon-user"></i>{{ __user__.name }}</a>
+                        <div class="uk-dropdown uk-dropdown-navbar">
+                            <ul class="uk-nav uk-nav-navbar">
+                                <li><a href="/signout"><i class="uk-icon-sign-out"></i>登出</a></li>
+
+                            </ul>
+                        </div>
+                    </li>
+                {% else %}
+                    <li><a href="/signin"><i class="uk-icon-sign-in"></i>登录</a></li>
+                    <li><a href="/register"><i class="uk-icon-edit"></i>注册</a></li>
+                {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div class="uk-container uk-container-center">
+        <div class="uk-grid">
+        {% block content %}
+        {% endblock %}
+
+        </div>
+    </div>
+
 
 </body>
 </html>

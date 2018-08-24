@@ -1,0 +1,131 @@
+{% extends '__base__.html' %}
+
+{% block title %}购票{% endblock %}
+
+{% block beforehead %}
+
+    <script xmlns: xmlns: xmlns: xmlns: xmlns: xmlns: xmlns: xmlns:>
+    </script>
+
+{% endblock %}
+
+{% block content %}
+    <div class="input_control">
+        <form action=".." method="post">
+            <input type="text" size="55" placeholder="出发地点">
+            <input type="text" size="55" placeholder="到达地点">
+            <input type="text" size="55" placeholder="出发日期">
+            <input type="submit" size="55" placeholder="查询">
+        </form>
+    </div><br>
+
+
+    <table id="tickets">
+        <thead>
+        <tr>
+            <th scope="col">列车号</th>
+            <th scope="col">始发站</th>
+            <th scope="col">到达站</th>
+            <th scope="col">发车日期</th>
+            <th scope="col">到达日期</th>
+            <th scope="col">票价</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>啦啦啦</td>
+            <td>啦啦啦</td>
+            <td>啦啦啦</td>
+            <td>啦啦啦</td>
+            <td>啦啦啦</td>
+            <td>啦啦啦</td>
+        </tr>
+        <tr>
+            <td>啦啦啦</td>
+            <td>啦啦啦</td>
+            <td>啦啦啦</td>
+            <td>啦啦啦</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+    <style class="text/css">
+        input[type="text"] {
+            text-align: center;
+            font-size: 1.4em;
+            height: 2.0em;
+            border-radius: 4px;
+            border: 1px solid #c8cccf;
+            color: #6a6f77;
+            -web-kit-appearance: none;
+            -moz-appearance: none;
+            display: inline;
+            outline: 0;
+            padding: 0;
+            margin: 0;
+            text-decoration: none;
+            width: 300px;
+        }
+
+        input[type="text"]:focus {
+            border: 1px solid #ff7496;
+        }
+
+        #tickets {
+            font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+            font-size: 13px;
+            text-align: center;
+            margin: 45px;
+            width: 720px;
+            border-collapse: collapse;
+        }
+
+        #tickets th {
+            font-size: 13px;
+            font-weight: normal;
+            text-align: center;
+            padding: 8px;
+            background: #b9c9fe;
+            border-top: 4px solid #aabcfe;
+            border-bottom: 1px solid #fff;
+            color: #039;
+        }
+
+        #tickets td {
+            padding: 8px;
+            background: #e8edff;
+            border-bottom: 1px solid #fff;
+            text-align: center;
+            color: #669;
+            border-top: 1px solid transparent;
+        }
+
+        #tickets tr:hover td {
+            background: #d0dafd;
+            color: #339;
+        }
+    </style>
+
+
+
+{% endblock %}
