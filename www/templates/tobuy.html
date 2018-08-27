@@ -28,38 +28,29 @@
             <th scope="col">到达站</th>
             <th scope="col">发车日期</th>
             <th scope="col">到达日期</th>
+            <th scope="col">剩余票数</th>
             <th scope="col">票价</th>
         </tr>
         </thead>
         <tbody>
+        {% for bus in buses %}
         <tr>
-            <td>啦啦啦</td>
-            <td>啦啦啦</td>
-            <td>啦啦啦</td>
-            <td>啦啦啦</td>
-            <td>啦啦啦</td>
-            <td>啦啦啦</td>
+            <td>{{ bus.BusID }}   </td>
+            <td>{{ bus.BusFrom }}</td>
+            <td>{{ bus.BusTo }}</td>
+            <td>{{ bus.BusDate }}</td>
+            <td>{{ bus.BusEnd }}</td>
+            <td>{{ bus.TicketNum }}</td>
+            <td>{{ bus.Price }}</td>
         </tr>
-        <tr>
-            <td>啦啦啦</td>
-            <td>啦啦啦</td>
-            <td>啦啦啦</td>
-            <td>啦啦啦</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
+        {% endfor %}
+
         </tbody>
     </table>
+
+
+
+
 
 
 
@@ -96,7 +87,7 @@
             font-size: 13px;
             text-align: center;
             margin: 45px;
-            width: 720px;
+            width: 1000px;
             border-collapse: collapse;
         }
 

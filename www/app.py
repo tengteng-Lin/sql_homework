@@ -7,7 +7,8 @@ from aiohttp import web #基于协程的异步模型    异步编程的原则：
 from jinja2 import Environment,FileSystemLoader
 import orm
 from www.coroweb import add_static,add_routes
-
+from www.handlers import cookie2user,COOKIE_NAME
+from www.config import configs
 
 def init_jinja2(app,**kw):
     '''
@@ -56,6 +57,30 @@ async def logger_factory(app,handler):
         logging.info('Request:%s %s' % (request.method,request.path))  #日志
         return (await handler(request))
     return logger
+
+@asyncio.coroutine
+def auth_factory(app,handler):
+    @asyncio.coroutine
+    def auth(request):
+        logging.info('check user:%s %s' % (request.method,request.path))
+        request.__user__=None
+        print(COOKIE_NAME)
+        cookie_str = request.cookies.get(COOKIE_NAME)
+        print(cookie_str)
+        if cookie_str:
+            user = yield from cookie2user(cookie_str)
+            if user:
+                logging.info('set current user:%s' % user.Phone)
+                request.__user__ = user
+            else:
+                logging.info('无该用户')
+        if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
+            return web.HTTPFound('/signin/')
+        return (yield from handler(request))
+    return auth
+
+
+
 
 
 
@@ -114,6 +139,7 @@ async def response_factory(app,handler):
                 resp.content_type = 'application/json;charset=utf-8'
                 return resp
             else: #jinja2模板
+                r['__user__'] = request.__user__
                 resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp
@@ -157,9 +183,9 @@ async def init(loop):
     :return:
     '''
 
-    await orm.create_pool(loop=loop, host='127.0.0.1', post=3306, user='root', password='password', db='awesome') # 创建数据库连接池
+    await orm.create_pool(loop=loop, **configs.db) # 创建数据库连接池
     app = web.Application(loop=loop,middlewares=[
-        logger_factory,response_factory
+        logger_factory,auth_factory,response_factory
     ])  #创建app对象，同时传入上文定义的拦截器middlewares
     init_jinja2(app,filters=dict(datetime=datetime_filter))  #初始化jinja2模板，并传入时间过滤器
     add_routes(app,'handlers')  #handlers指的是handlers模块也就是handlers.py

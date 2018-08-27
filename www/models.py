@@ -11,24 +11,25 @@ class User(Model):
 
     UserID = StringField(primary_key=True,default=next_id,ddl='char(50)')
     User = StringField(ddl='varchar(50)')
+    Pass = StringField(ddl='varchar(50)')
     Sex = StringField(ddl='varchar(50)')
     Phone = StringField(ddl='char(11)')
 
 class Bus(Model):
     __table__ = 'buses'
 
-    BusID = StringField(primary_key=True,default=next_id,ddl='char(10)')
+    BusID = StringField(primary_key=True,default=next_id,ddl='char(50)')
     BusFrom = StringField(ddl='varchar(50)')
     BusTo = StringField(ddl='varchar(50)')
-    BusDate = FloatField(default=time.time)  #发车日期
-    BusEnd = FloatField(default=time.time)
+    BusDate = StringField(ddl='varchar(50)')  #发车日期
+    BusEnd = StringField(ddl='varchar(50)')
     TicketNum = IntegerField() #剩余票数
     Price = IntegerField()  #票价
 
 class Order(Model):
     __table__='orders'
 
-    OrderID = StringField(primary_key=True,default=next_id,ddl='char(10)')
+    OrderID = StringField(primary_key=True,default=next_id,ddl='char(50)')
     UserID = StringField(ddl='char(18)')
     BusID = StringField(ddl='char(10)')
     BusDate = FloatField(default=time.time)

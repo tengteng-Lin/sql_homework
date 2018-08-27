@@ -9,24 +9,25 @@ grant select, insert, update, delete on awesome.* to 'www-data'@'localhost' iden
 create table users(
     `UserID` VARCHAR (50) NOT NULL ,
     `User` VARCHAR (50) NOT NULL ,
+    `Pass` VARCHAR (50) NOT NULL ,
     `Sex` VARCHAR (50),
     `Phone` CHAR (11),
     PRIMARY KEY (`UserID`)
 )engine=innodb DEFAULT charset=utf8;
 
 CREATE TABLE buses(
-    `BusID` VARCHAR (10) NOT NULL ,
+    `BusID` VARCHAR (50) NOT NULL ,
     `BusFrom` VARCHAR (50) NOT NULL ,
     `BusTo` VARCHAR (50) not NULL ,
-    `BusDate` FLOAT NOT NULL,
-    `BusEnd` FLOAT not NULL,
+    `BusDate` VARCHAR (50) NOT NULL,
+    `BusEnd` VARCHAR (50) not NULL,
     `TicketNum` int NOT NULL,
     `Price` INT NOT NULL,
     PRIMARY KEY (`BusID`,`BusDate`)
 )engine=innodb DEFAULT charset=utf8;
 
 CREATE TABLE orders(
-    `OrderID` VARCHAR (10) NOT NULL ,
+    `OrderID` VARCHAR (50) NOT NULL ,
     `UserID` VARCHAR (18) NOT NULL ,
     `BusID` VARCHAR (10) NOT NULL ,
     `BusDate` FLOAT NOT NULL ,
