@@ -17,9 +17,7 @@ _COOKIE_KEY = configs.session.secret  #cookie密钥，作为加密cookie原始�
 
 @get('/')
 def index(request):
-    print('来到首页')
-
-    return {
+        return {
         '__template__': 'tobuy.html',
         '__user__': request.__user__
 
@@ -41,17 +39,18 @@ def cookie2user(cookie_str):
         if len(L) != 3:
             return None
         uid,expires,sha1 = L
+        print(uid)
         if int(expires) < time.time():
             return None
-        user = yield from User.find(uid)
+        user = yield from User.findAll('Phone=?',[uid])
         if user is None:
             print('无')
             return None
-        s = '%s-%s-%s-%s' % (uid,user.Pass,expires,_COOKIE_KEY)
+        s = '%s-%s-%s-%s' % (uid,user[0].Pass,expires,_COOKIE_KEY)
         if sha1 != hashlib.sha1(s.encode('utf-8')).hexdigest():
             logging.info('invalid sha1')
             return None
-        user.Pass = '******'
+        user[0].Pass = '******'
         return user
     except Exception as e:
         logging.exception(e)
@@ -132,4 +131,21 @@ def api_register_user(*,UserID,Phone,name,Pass):
     user.Pass='******'
     r.content_type = 'application/json'
     r.body = json.dumps(user,ensure_ascii=True).encode('utf-8')
+    return r
+
+@post('/api/query_buses')
+@asyncio.coroutine
+def api_query_buses(*,BusFrom,BusTo,BusDate):
+    print('查询列车')
+    if not BusDate:
+        raise APIValueError('发车时间')
+    if not BusFrom:
+        raise APIValueError('始发地')
+    buses1 = yield from Bus.findAll('BusFrom=?',[BusFrom])
+    buses2 = yield from Bus.findAll('BusTo=?',[BusTo])
+    buses = [i for i in buses1 if i in buses2]
+#    retB = list(set(buses1).intersection(set(buses2)))
+    r = web.Response()
+    r.content_type = 'application/json'
+    r.body = json.dumps(buses, ensure_ascii=True).encode('utf-8')
     return r
