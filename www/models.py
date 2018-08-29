@@ -24,15 +24,15 @@ class Bus(Model):
     BusDate = StringField(ddl='varchar(50)')  #发车日期
     BusEnd = StringField(ddl='varchar(50)')
     TicketNum = IntegerField() #剩余票数
-    Price = IntegerField()  #票价
+    Price = FloatField()  #票价
 
 class Order(Model):
     __table__='orders'
 
     OrderID = StringField(primary_key=True,default=next_id,ddl='char(50)')
-    UserID = StringField(ddl='char(18)')
-    BusID = StringField(ddl='char(10)')
-    BusDate = FloatField(default=time.time)
+    UserID = StringField(ddl='char(50)')
+    BusID = StringField(ddl='char(50)')
+    BusDate = StringField(ddl='varchar(50)')
     OrderDate = FloatField(default=time.time)  #订购日期
-    OrderNum = IntegerField()  #订购票数
-    Total = IntegerField()  #总价
+    OrderNum = IntegerField(default=1)  #订购票数
+    Total = FloatField(default=1)  #总价

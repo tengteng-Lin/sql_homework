@@ -149,3 +149,10 @@ def api_query_buses(*,BusFrom,BusTo,BusDate):
     r.content_type = 'application/json'
     r.body = json.dumps(buses, ensure_ascii=True).encode('utf-8')
     return r
+
+@post('/api/add_order')
+def add_order(*,UserID,BusID,BusDate,OrderDate,OrderNum=1,Total=1):
+    logging.info('添加订单。。。')
+    order = Order(UserID=UserID,BusID=BusID,BusDate=BusDate)
+    yield from order.save()
+
