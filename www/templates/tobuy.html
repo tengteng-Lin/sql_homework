@@ -91,7 +91,8 @@
                 "BusDate": tr1.cells[3].innerHTML,
                 'BusFrom':tr1.cells[1].innerHTML,
                 'BusTo':tr1.cells[2].innerHTML
-            }
+            };
+            console.log({{ __user__.UserID }});
 
             $.ajax({
                 url: '/api/add_order',
@@ -133,7 +134,7 @@
             <th scope="col">到达日期</th>
             <th scope="col">剩余票数</th>
             <th scope="col">票价</th>
-            <th scope="col" onclick="">预定</th>
+            <th scope="col">预定</th>
         </tr>
         </thead>
         <tbody id="tbody">

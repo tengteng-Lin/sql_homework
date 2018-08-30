@@ -64,17 +64,15 @@ def auth_factory(app,handler):
     def auth(request):
         logging.info('check user:%s %s' % (request.method,request.path))
         request.__user__=None
-        print(COOKIE_NAME)
         cookie_str = request.cookies.get(COOKIE_NAME)
-        print(cookie_str)
         if cookie_str:
             user = yield from cookie2user(cookie_str)
             if user:
-                logging.info('set current user:%s' % user.Phone)
-                request.__user__ = user
+                logging.info('set current user:%s' % user[0].Phone)
+                request.__user__ = user[0]
             else:
                 logging.info('无该用户')
-        if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
+        if request.path.startswith('/manage/') and (request.__user__ is None):
             return web.HTTPFound('/signin/')
         return (yield from handler(request))
     return auth
@@ -156,6 +154,7 @@ async def response_factory(app,handler):
         resp = web.Response(body=str(r).encode('utf-8'))
         resp.content_type = 'text/plain;charset=utf-8'
         return resp
+
     return response
 
 def datetime_filter(t):

@@ -43,6 +43,7 @@ async def select(sql,args,size=None):
     :return: 查询结果
     '''
     log(sql,args)
+    print('进入了select')
     global __pool
     # async调用一个子协程，并直接返回调用的结果。这里是从连接池中返回一个连接，这个地方已经创建了进程池并和进程池连接了，进程池的创建被封装到了create__pool函数里
     # async with是一个异步上下文管理器（是因为一异步都异步吗？
@@ -50,6 +51,7 @@ async def select(sql,args,size=None):
         async with conn.cursor(aiomysql.DictCursor) as cur:  #创建一个结果为字典的游标
             #在协程函数中，可以通过await语法来挂起自身的协程，并等待另一个协程完成直到返回结果
             await cur.execute(sql.replace('?',"%s"),args or ())  #执行sql语句，将sql语句中的？替换成%s
+            print(sql.replace('?',"%s"),args or ())
             if size:
                 rs = await cur.fetchmany(size)
             else:
@@ -66,6 +68,7 @@ async def execute(sql,args,autocommit=True):
     :return: 
     '''
     log(sql)
+    #print('进入了execute')
 
     async with __pool.get() as conn:
         if not autocommit:
@@ -213,6 +216,7 @@ class Model(dict,metaclass=ModelMetaclass):
         '''
         'find objects by where clause'
         sql = [cls.__select__]  #__select__在ModelMetaclass的属性列表里面
+        #print('to  enter  findAll')
         if where:
             sql.append('where')
             sql.append(where)
@@ -271,11 +275,11 @@ class Model(dict,metaclass=ModelMetaclass):
         return cls(**rs[0])
 
     async def save(self):   #会自动‘计算’缺省值
-        print(self)
+        #print(self)
         args = list(map(self.getValueOrDefault,self.__fields__))
-        print('args'+str(args))
+
         args.append(self.getValueOrDefault(self.__primary_key__))
-        print(self.__insert__)
+
         rows = await execute(self.__insert__, args)
         if rows != 1:
             logging.warn('failed to insert record:affected rows: %s' % rows)
