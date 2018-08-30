@@ -84,16 +84,11 @@
 
         function make_order(obj) {
             var tr1 = obj.parentNode.parentNode;
-            console.log(__user__.UserID);
-
             var params = {
-                "UserID":__user__.UserID,
+                "UserID":{{ __user__.UserID }},
                 "BusID": tr1.cells[0].innerHTML,
-               // "BusFrom": tr1.cells[1].innerHTML,
-               // "BusTo": tr1.cells[2].innerHTML,
+                "OrderDate":123,
                 "BusDate": tr1.cells[3].innerHTML,
-                //"BusEnd": tr1.cells[4].innerHTML,
-{#                "TicketNum": tr1.cells[5].innerHTML,#}
             }
 
             $.ajax({
@@ -101,45 +96,16 @@
                 method:'post',
                 data: params,
                 complete: function (data) {
-                    // 这里获取后台数据 DATA 刷新当前页面的内容
+                    console.log(data)
+                },
+                success:function (data) {
+                    alert('购票成功，购票数量x1，您的订单号为：'+data.OrderID)
+                    console.log(data)
                 }}
-
             );
 
-            var temp = document.createElement("form");
-            //postOrder('/api/add_order', params)
-            console.log(tr1.cells[0].innerHTML);
-
         }
-
-        function postOrder(url, params) {
-            var temp = document.createElement("form");
-            temp.action = url;
-            temp.method = "post";
-            temp.style.display = "none";
-            temp.id = 'form_order';
-            temp.on
-
-            for (var x in params) {
-                var opt = document.createElement("textarea");
-                opt.name = x;
-                opt.value = params[x];
-                temp.appendChild(opt);
-            }
-
-            document.body.appendChild(temp);
-            console.log(temp.id)
-
-
-            //temp.submit();
-            //window.location.href('/')
-            return temp;
-        }
-
-
     </script>
-
-
 {% endblock %}
 
 {% block content %}

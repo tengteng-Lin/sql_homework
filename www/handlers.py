@@ -151,8 +151,15 @@ def api_query_buses(*,BusFrom,BusTo,BusDate):
     return r
 
 @post('/api/add_order')
+@asyncio.coroutine
 def add_order(*,UserID,BusID,BusDate,OrderDate,OrderNum=1,Total=1):
+    print('添加订单')
     logging.info('添加订单。。。')
     order = Order(UserID=UserID,BusID=BusID,BusDate=BusDate)
     yield from order.save()
+
+    r = web.Response()
+    r.content_type = 'application/json'
+    r.body = json.dumps(order, ensure_ascii=True).encode('utf-8')
+    return r
 

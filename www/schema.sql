@@ -29,7 +29,7 @@ CREATE TABLE buses(
 
 CREATE TABLE orders(
     `OrderID` VARCHAR (50) NOT NULL ,
-    `UserPhone` VARCHAR (18) NOT NULL ,
+    `UserID` VARCHAR (18) NOT NULL ,
     `BusID` VARCHAR (10) NOT NULL ,
     `BusDate` VARCHAR (50) NOT NULL ,
     `OrderDate` FLOAT NOT NULL ,
