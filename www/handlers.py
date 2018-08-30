@@ -152,10 +152,10 @@ def api_query_buses(*,BusFrom,BusTo,BusDate):
 
 @post('/api/add_order')
 @asyncio.coroutine
-def add_order(*,UserID,BusID,BusDate,OrderDate,OrderNum=1,Total=1):
+def add_order(*,UserID,BusID,BusFrom,BusTo,BusDate,OrderDate,OrderNum=1,Total=1):
     print('添加订单')
     logging.info('添加订单。。。')
-    order = Order(UserID=UserID,BusID=BusID,BusDate=BusDate)
+    order = Order(UserID=UserID,BusID=BusID,BusDate=BusDate,BusFrom=BusFrom,BusTo=BusTo)
     yield from order.save()
 
     r = web.Response()
@@ -163,3 +163,10 @@ def add_order(*,UserID,BusID,BusDate,OrderDate,OrderNum=1,Total=1):
     r.body = json.dumps(order, ensure_ascii=True).encode('utf-8')
     return r
 
+@get('/api/my_order')
+def my_order(request):
+    orders = Order.findAll('UserID=?',request.__user__.UserID)
+    return {
+        '__template__':'refund.html',
+        'orders':'orders'
+    }

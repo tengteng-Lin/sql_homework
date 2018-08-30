@@ -32,6 +32,8 @@ class Order(Model):
     OrderID = StringField(primary_key=True,default=next_id,ddl='char(50)')
     UserID = StringField(ddl='char(50)')
     BusID = StringField(ddl='char(50)')
+    BusFrom = StringField(ddl='varchar(50)')
+    BusTo = StringField(ddl='varchar(50)')
     BusDate = StringField(ddl='varchar(50)')
     OrderDate = FloatField(default=time.time)  #订购日期
     OrderNum = IntegerField(default=1)  #订购票数

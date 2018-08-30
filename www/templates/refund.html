@@ -1,6 +1,6 @@
 {% extends '__base__.html' %}
 
-{% block title %}购票{% endblock %}
+{% block title %}退票{% endblock %}
 
 {% block beforehead %}
 
@@ -8,40 +8,7 @@
     </script>
 
     <script>
-        $(function () {
-            var vm = new Vue({
-                el: '#vm',
-                data: {
-                    BusFrom: '',
-                    BusTo: '',
-                    BusDate: ''
-                },
-                methods: {
-                    submit: function (event) {
-                        event.preventDefault();
-                        var $form = $('#vm');
 
-                        if (!this.BusFrom) {
-                            return $form.showFormError('请输入始发地！');
-                        }
-                        if (!this.BusTo) {
-                            return $form.showFormError('请输入目的地！');
-                        }
-                        $form.postJSON('/api/query_buses', {
-                            BusFrom: this.BusFrom,
-                            BusTo: this.BusTo,
-                            BusDate: this.BusDate
-                        }, function (err, r) {
-                            if (err) {
-                                return $form.showFormError(err);
-                            }
-                            refresh2(r);
-                        });
-                    }
-                }
-            });
-            $('#vm').show();
-        });
 
         function refresh2(r) {
             console.log(r)
@@ -89,8 +56,6 @@
                 "BusID": tr1.cells[0].innerHTML,
                 "OrderDate":123,
                 "BusDate": tr1.cells[3].innerHTML,
-                'BusFrom':tr1.cells[1].innerHTML,
-                'BusTo':tr1.cells[2].innerHTML
             }
 
             $.ajax({
@@ -111,69 +76,35 @@
 {% endblock %}
 
 {% block content %}
-    <div class="input_control">
-        <form id="vm" v-on="submit: submit">
-            <div class="uk-alert uk-alert-danger uk-hidden"></div>
-            <input v-model="BusFrom" type="text" size="55" placeholder="出发地点">
-            <input v-model="BusTo" type="text" size="55" placeholder="到达地点">
-            <input v-model="BusDate" type="text" size="55" placeholder="出发日期">
-            <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-user"></i> 查询</button>
-
-        </form>
-    </div><br>
 
 
     <table id="tickets">
         <thead>
         <tr>
+            <th scope="col">订单号</th>
             <th scope="col">列车号</th>
             <th scope="col">始发站</th>
-            <th scope="col">到达站</th>
+            <th scope="col">终点站</th>
             <th scope="col">发车日期</th>
             <th scope="col">到达日期</th>
-            <th scope="col">剩余票数</th>
-            <th scope="col">票价</th>
-            <th scope="col" onclick="">预定</th>
+
+            <th scope="col" onclick="">退票</th>
         </tr>
         </thead>
         <tbody id="tbody">
-
+            <tr>{% for order in orders %}</tr>
+                <td>order.OrderID</td>
+                <td>order.BusID</td>
+                <td>order.BusFrom</td>
+                <td>order.BusTo</td>
+                <td>order.BusDate</td>
+                <td>order.BusEnd</td>
+                {% endfor %}
         </tbody>
     </table>
 
 
-
-
-
-
-
-
-
-
-
-
-
     <style class="text/css">
-        input[type="text"] {
-            text-align: center;
-            font-size: 1.4em;
-            height: 2.0em;
-            border-radius: 4px;
-            border: 1px solid #c8cccf;
-            color: #6a6f77;
-            -web-kit-appearance: none;
-            -moz-appearance: none;
-            display: inline;
-            outline: 0;
-            padding: 0;
-            margin: 0;
-            text-decoration: none;
-            width: 300px;
-        }
-
-        input[type="text"]:focus {
-            border: 1px solid #ff7496;
-        }
 
         #tickets {
             font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
