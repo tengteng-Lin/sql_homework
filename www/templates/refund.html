@@ -4,10 +4,31 @@
 
 {% block beforehead %}
     <script>
-        function dayin() {
-            console.log({{ orders }})
+        function refund(obj) {
+            var tr1 = obj.parentNode.parentNode;
+            var params = {
+                "UserID":{{ __user__.UserID }},
+                "OrderID": tr1.cells[0].innerHTML,
 
+            };
+
+
+            $.ajax({
+                url: '/api/refund',
+                method:'post',
+                data: params,
+                complete: function (data) {
+                    console.log(data)
+                },
+                success:function (data) {
+                    alert('退票成功，退票数量x1 ！')
+                        refresh()
+
+                    console.log(data)
+                }}
+            );
         }
+
     </script>
 {% endblock %}
 
@@ -22,8 +43,7 @@
             <th scope="col">始发站</th>
             <th scope="col">终点站</th>
             <th scope="col">发车日期</th>
-            <th scope="col">到达日期</th>
-            <th scope="col" onclick="dayin()">退票</th>
+            <th scope="col">退票</th>
 
         </tr>
         </thead>
@@ -35,7 +55,7 @@
                 <td>{{ order.BusFrom }}</td>
                 <td>{{ order.BusTo }}</td>
                 <td>{{ order.BusDate }}</td>
-                <td>{{ order.BusEnd }}</td>
+                <td><input type='button' id='sub' value='退票' onclick = 'refund(this)'/></td>
             </tr>
         {% endfor %}
         </tbody>

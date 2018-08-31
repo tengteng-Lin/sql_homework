@@ -7,7 +7,7 @@ configs = {
     'db': {
         'host': '127.0.0.1',
         'port': 3306,
-        'user': 'www',
+        'user': 'root',
         'password':'password',
         'db': 'awesome'
     },

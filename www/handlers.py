@@ -179,8 +179,22 @@ def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, OrderDate, OrderNum=1, 
 @asyncio.coroutine
 def my_order(request):
     orders = yield from Order.findAll('UserID=?', request.__user__.UserID)
-    #print(orders)
+    print(orders)
     return {
         '__template__': 'refund.html',
-        'orders': 'orders'
+        'orders': orders
     }
+
+@post('/api/refund')
+@asyncio.coroutine
+def refund(*,UserID,OrderID):
+    order = yield from Order.find(OrderID)
+    yield from order.remove()
+
+    orders = yield from Order.findAll('UserID=?', UserID)
+    r = web.Response()
+    r.content_type = 'application/json'
+    r.body = json.dumps(orders, ensure_ascii=True).encode('utf-8')
+    return r
+
+

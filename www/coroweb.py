@@ -121,13 +121,13 @@ class RequestHandler(object):   #从URL函数中分析其需要接收的参数�
                 if not request.content_type:  #查询有没有提交数据的格式
                     return web.HTTPBadRequest(text='Missing Content-type')
                 ct = request.content_type.lower()
-                if ct.startwith('application/json'):  #表示消息主体是序列化后的json字符串
+                if ct.startswith('application/json'):  #表示消息主体是序列化后的json字符串
                     params = await request.json()  #read request body decoded asjson
                     if not isinstance(params,dict):   #如果读取出来的信息类型不是dict，
                         return web.HTTPBadRequest(text='JSON body must be object') #那json对象一定有问题
                     kw = params  #把读取出来的dict赋值给kw
                 #以下两种 content type都表示消息主体是表单
-                elif ct.startwith('application/x-www-form-urlencoded') or ct.startwith('multipart/form-data'):
+                elif ct.startswith('application/x-www-form-urlencoded') or ct.startwith('multipart/form-data'):
                     #request.post方法从request  body读取post参数，即表单信息，并包装成字典赋给kw变量
                     params = await request.post()
                     kw = dict(**params)
