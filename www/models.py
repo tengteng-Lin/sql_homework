@@ -14,7 +14,7 @@ class User(Model):
     Pass = StringField(ddl='varchar(50)')
     Sex = StringField(ddl='varchar(50)')
     Phone = StringField(ddl='char(11)')
-    Admin = BooleanField(default = False)
+    admin = BooleanField()
 
 class Bus(Model):
     __table__ = 'buses'
@@ -39,3 +39,9 @@ class Order(Model):
     OrderDate = FloatField(default=time.time)  #订购日期
     OrderNum = IntegerField(default=1)  #订购票数
     Total = FloatField(default=1)  #总价
+
+class Admin(Model):
+    __table__='admins'
+
+    adminID = StringField(primary_key=True,ddl='varchar(50)')
+    password = StringField(ddl='varchar(50)')

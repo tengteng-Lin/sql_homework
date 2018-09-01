@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>管理员页面</title>
-    <link rel="stylesheet" href="/static/css/uikit.min.css">      <!--因为加“/”的意思是根目录下的绝对路径，不加“/”的意思是当前目录下的相对路径。-->
-    <link rel="stylesheet" href="/static/css/uikit.gradient.min.css">   <!-- 绝对路径是指目录下的绝对位置,直接到达目标位置,通常是从盘符开始的路径。-->
-    <link rel="stylesheet" href="/static/css/awesome.css">     <!--相对路径就是指由这个文件所在的路径引起的跟其它文件(或文件夹)的路径关系。-->
-    <script src="/static/js/jquery.min.js"></script>
-    <script src="/static/js/sha1.min.js"></script>
-    <script src="/static/js/uikit.min.js"></script>
-    <script src="/static/js/sticky.min.js"></script>
-    <script src="/static/js/vue.min.js"></script>
-    <script src="/static/js/awesome.js"></script>
+{% extends '__base__.html' %}
+
+{% block title %}注册{% endblock %}
+
+{% block beforehead %}
 
     <script>
         $(function () {
@@ -23,7 +14,7 @@
                     BusTo:'',
                     BusDate:'',
                     BusEnd:'',
-                    NumTicket:'',
+                    TicketNum:'',
                     Price:''
                 },
                 methods: {
@@ -45,28 +36,31 @@
                         if (!this.BusEnd) {
                             return $form.showFormError('请输入到达时间！');
                         }
-                        if (!this.NumTicket) {
+                        if (!this.TicketNum) {
                             return $form.showFormError('请输入车票数！');
                         }
                         if (!this.Price) {
                             return $form.showFormError('请输入票价！');
                         }
 
-                        $form.postJSON('/api/users', {
+                        $form.postJSON('/manage/add_tickets', {
 
-                            BusID: this.UserID,
-                            BusFrom: this.User,
-                            BusTo: this.Phone,
+                            BusID: this.BusID,
+                            BusFrom: this.BusFrom,
+                            BusTo: this.BusTo,
                             BusDate:this.BusDate,
                             BusEnd:this.BusEnd,
-                            NumTicket:this.NumTicket,
+                            TicketNum:this.TicketNum,
                             Price:this.Price
                         }, function (err, r) {
                             if (err) {
                                 return $form.showFormError(err);
                             }
-                            //console.log(r.UserID)
-                            return location.assign('/');
+                            //console.log(r)
+                            alert("添加成功！")
+                            refresh()
+                            //return location.assign('/api/admin_add_tickets');
+
                         });
                     }
                 }
@@ -74,22 +68,11 @@
             $('#vm').show();
         });
     </script>
-</head>
-<body>
-<nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
-    <div class="uk-container uk-container-center">
-        <a href="/" class="uk-navbar-brand">管理员页面</a>
-        <ul class="uk-navbar-nav">
-            <li data-url="tobuy"><a href="/"><i class="uk-icon-book"></i>添加车票</a></li>
-            <li data-url="refund"><a href="/api/my_order"><i class="uk-icon-check"></i>删除车票</a></li>
-        </ul>
+{% endblock %}
+
+{% block content %}
 
 
-    </div>
-</nav>
-
-<div class="uk-container uk-container-center">
-    <div class="uk-grid">
         <div class="uk-width-2-3">
             <h1>添加车票</h1>
 
@@ -130,7 +113,7 @@
                 <div class="uk-form-row">
                     <label class="uk-form-label">车票数:</label>
                     <div class="uk-form-controls">
-                        <input v-model="NumTicket" type="tel" maxlength="50" placeholder="车票数"
+                        <input v-model="TicketNum" type="tel" maxlength="50" placeholder="车票数"
                                class="uk-width-1-1">
                     </div>
                 </div>
@@ -150,9 +133,7 @@
         </div>
 
 
-    </div>
-</div>
 
 
-</body>
-</html>
+
+{% endblock %}

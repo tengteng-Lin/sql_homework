@@ -12,7 +12,7 @@ create table users(
     `Pass` VARCHAR (50) NOT NULL ,
     `Sex` VARCHAR (50),
     `Phone` CHAR (11),
-    `Admin` bool NOT NULL ,
+    `admin` bool NOT NULL ,
     PRIMARY KEY (`UserID`),
     UNIQUE KEY `Phone` (`Phone`)
 )engine=innodb DEFAULT charset=utf8;
@@ -40,3 +40,4 @@ CREATE TABLE orders(
     `Total` FLOAT NOT NULL,
     PRIMARY KEY (`OrderID`)
 )engine=innodb DEFAULT charset=utf8
+

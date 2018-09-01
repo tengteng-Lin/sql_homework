@@ -16,7 +16,7 @@
     </ul>
 {% endmacro %}
 -->
-<html >
+<html>
 <head>
     <meta charset="utf-8"/>
     {% block meta %}<!--block meta -->{% endblock %}
@@ -33,44 +33,61 @@
     {% block beforehead %}<!--before head -->{% endblock %}
 </head>
 <body>
-    <nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
-        <div class="uk-container uk-container-center">
-            <a href="/" class="uk-navbar-brand">购票系统</a>
+<nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
+    <div class="uk-container uk-container-center">
+        <a href="/" class="uk-navbar-brand">购票系统</a>
+        {% if __user__ %}
+            {% if __user__.admin %}
+                <ul class="uk-navbar-nav">
+                    <li data-url="add"><a href="/api/admin_add_tickets"><i class="uk-icon-book"></i>添加车票</a></li>
+                    <li data-url="delete"><a href="/manage/delete_tickets"><i class="uk-icon-check"></i>删除车票</a></li>
+                </ul>
+            {% else %}
+                <ul class="uk-navbar-nav">
+                    <li data-url="tobuy"><a href="/"><i class="uk-icon-book"></i>购票</a></li>
+                    <li data-url="refund"><a href="/api/my_order"><i class="uk-icon-check"></i>退票</a></li>
+                </ul>
+                <div class="uk-navbar-flip">
+                    <ul class="uk-navbar-nav">
+
+                        <li class="uk-parent" data-uk-slideshow-slide>
+                            <a href="#0"><i class="uk-icon-user"></i>{{ __user__.User }}</a>
+                            <div class="uk-dropdown uk-dropdown-navbar">
+                                <ul class="uk-nav uk-nav-navbar">
+                                    <li><a href="/signout"><i class="uk-icon-sign-out"></i>登出</a></li>
+
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+        {% else %}
             <ul class="uk-navbar-nav">
                 <li data-url="tobuy"><a href="/"><i class="uk-icon-book"></i>购票</a></li>
                 <li data-url="refund"><a href="/api/my_order"><i class="uk-icon-check"></i>退票</a></li>
             </ul>
-
             <div class="uk-navbar-flip">
                 <ul class="uk-navbar-nav">
-                {% if __user__ %}
-                    <li class="uk-parent" data-uk-slideshow-slide>
-                        <a href="#0"><i class="uk-icon-user"></i>{{ __user__.User }}</a>
-                        <div class="uk-dropdown uk-dropdown-navbar">
-                            <ul class="uk-nav uk-nav-navbar">
-                                <li><a href="/signout"><i class="uk-icon-sign-out"></i>登出</a></li>
 
-                            </ul>
-                        </div>
-                    </li>
-                {% else %}
+
                     <li><a href="/signin"><i class="uk-icon-sign-in"></i>登录</a></li>
                     <li><a href="/register"><i class="uk-icon-edit"></i>注册</a></li>
-                {% endif %}
+
                 </ul>
             </div>
-        </div>
-    </nav>
+        {% endif %}
+    </div>
+</nav>
 
 
-
-    <div class="uk-container uk-container-center">
-        <div class="uk-grid">
+<div class="uk-container uk-container-center">
+    <div class="uk-grid">
         {% block content %}
         {% endblock %}
 
-        </div>
     </div>
+</div>
 
 
 </body>

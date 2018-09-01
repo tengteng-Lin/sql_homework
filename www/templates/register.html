@@ -34,7 +34,7 @@ $(function () {
             submit: function (event) {
                 event.preventDefault();
                 var $form = $('#vm');
-                if (! isCardID(this.UserID)) {
+                if (! this.UserID) {
                     return $form.showFormError('身份证号');
                 }
                 if (!this.User) {
@@ -57,6 +57,7 @@ $(function () {
                     if (err) {
                         return $form.showFormError(err);
                     }
+                    console.log(r.UserID)
                     return location.assign('/');
                 });
             }

@@ -4,7 +4,7 @@ from www.coroweb import get, post
 
 from aiohttp import web
 
-from www.models import User, Bus, Order, next_id
+from www.models import User, Bus, Order, next_id,Admin
 
 import www.markdown2  # 支持markdown文本输入的模块
 
@@ -23,7 +23,7 @@ def check_admin(request):
 def index(request):
     #print('来到首页'+request.__user__.UserID)  没问题
     return {
-        '__template__': 'admin.html',
+        '__template__': 'tobuy.html',
         '__user__': request.__user__
     }
 
@@ -71,7 +71,6 @@ def register():
 
 @get('/signin')
 def signin():
-    print('来到登录页')
     return {
         '__template__': 'signin2.html'
     }
@@ -87,7 +86,6 @@ def authenticate(*, Phone, Pass):
         raise APIValueError('Pass', 'Invalid password')
     users = yield from User.findAll('Phone=?', [Phone])
     if len(users) == 0:
-        print('没有该用户')
         raise APIValueError('Phone', 'Phone not exists')
     user = users[0]
     # 检查密码
@@ -133,7 +131,7 @@ def api_register_user(*, UserID, Phone, name, Pass):
     users = yield from User.findAll('Phone=?', [Phone])
     if len(users) > 0:
         raise APIError('register:failed', 'phone', 'Phone is already in use.')
-    uid = next_id()
+
     sha1_Pass = '%s:%s' % (Phone, Pass)
     user = User(UserID=UserID, User=name, Pass=hashlib.sha1(sha1_Pass.encode('utf-8')).hexdigest(), Phone=Phone)
     yield from user.save()
@@ -202,8 +200,9 @@ def refund(*,UserID,OrderID):
 
 @post('/manage/add_tickets')
 @asyncio.coroutine
-def add_tickets(*,BusID,BusFrom,BusTo,BusDate,BusEnd,TicketNum,Price,request):
-    check_admin(request)
+def add_tickets(*,BusID,BusFrom,BusTo,BusDate,BusEnd,TicketNum,Price):
+    print('添加车票')
+
     b = Bus(BusID=BusID,BusFrom=BusFrom,BusTo=BusTo,BusDate=BusDate,BusEnd=BusEnd,TicketNum=TicketNum,Price=Price)
     yield from b.save()
 
@@ -212,3 +211,8 @@ def add_tickets(*,BusID,BusFrom,BusTo,BusDate,BusEnd,TicketNum,Price,request):
     r.body = json.dumps(b, ensure_ascii=True).encode('utf-8')
     return r
 
+@get('/api/admin_add_tickets')
+def api_admin_add_tickets():
+    return {
+        '__template__':'admin.html'
+    }
