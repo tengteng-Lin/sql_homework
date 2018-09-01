@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员页面</title>
+    <link rel="stylesheet" href="/static/css/uikit.min.css">      <!--因为加“/”的意思是根目录下的绝对路径，不加“/”的意思是当前目录下的相对路径。-->
+    <link rel="stylesheet" href="/static/css/uikit.gradient.min.css">   <!-- 绝对路径是指目录下的绝对位置,直接到达目标位置,通常是从盘符开始的路径。-->
+    <link rel="stylesheet" href="/static/css/awesome.css">     <!--相对路径就是指由这个文件所在的路径引起的跟其它文件(或文件夹)的路径关系。-->
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/sha1.min.js"></script>
+    <script src="/static/js/uikit.min.js"></script>
+    <script src="/static/js/sticky.min.js"></script>
+    <script src="/static/js/vue.min.js"></script>
+    <script src="/static/js/awesome.js"></script>
+
+    <script>
+        $(function () {
+            var vm = new Vue({
+                el: '#vm',
+                data: {
+                    BusID:'',
+                    BusFrom:'',
+                    BusTo:'',
+                    BusDate:'',
+                    BusEnd:'',
+                    NumTicket:'',
+                    Price:''
+                },
+                methods: {
+                    submit: function (event) {
+                        event.preventDefault();
+                        var $form = $('#vm');
+                        if (!this.BusID) {
+                            return $form.showFormError('请输入列车号！');
+                        }
+                        if (!this.BusFrom) {
+                            return $form.showFormError('请输入始发站！');
+                        }
+                        if (!this.BusTo) {
+                            return $form.showFormError('请输入终点站！');
+                        }
+                        if (!this.BusDate) {
+                            return $form.showFormError('请输入发车时间！');
+                        }
+                        if (!this.BusEnd) {
+                            return $form.showFormError('请输入到达时间！');
+                        }
+                        if (!this.NumTicket) {
+                            return $form.showFormError('请输入车票数！');
+                        }
+                        if (!this.Price) {
+                            return $form.showFormError('请输入票价！');
+                        }
+
+                        $form.postJSON('/api/users', {
+
+                            BusID: this.UserID,
+                            BusFrom: this.User,
+                            BusTo: this.Phone,
+                            BusDate:this.BusDate,
+                            BusEnd:this.BusEnd,
+                            NumTicket:this.NumTicket,
+                            Price:this.Price
+                        }, function (err, r) {
+                            if (err) {
+                                return $form.showFormError(err);
+                            }
+                            //console.log(r.UserID)
+                            return location.assign('/');
+                        });
+                    }
+                }
+            });
+            $('#vm').show();
+        });
+    </script>
+</head>
+<body>
+<nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
+    <div class="uk-container uk-container-center">
+        <a href="/" class="uk-navbar-brand">管理员页面</a>
+        <ul class="uk-navbar-nav">
+            <li data-url="tobuy"><a href="/"><i class="uk-icon-book"></i>添加车票</a></li>
+            <li data-url="refund"><a href="/api/my_order"><i class="uk-icon-check"></i>删除车票</a></li>
+        </ul>
+
+
+    </div>
+</nav>
+
+<div class="uk-container uk-container-center">
+    <div class="uk-grid">
+        <div class="uk-width-2-3">
+            <h1>添加车票</h1>
+
+            <form id="vm" v-on="submit: submit" class="uk-form uk-form-stacked">
+                <div class="uk-alert uk-alert-danger uk-hidden"></div>
+                <div class="uk-form-row">
+                    <label class="uk-form-label">列车号:</label>
+                    <div class="uk-form-controls">
+                        <input v-model="BusID" type="text" maxlength="50" placeholder="列车号" class="uk-width-1-1">
+                    </div>
+                </div>
+                <div class="uk-form-row">
+                    <label class="uk-form-label">始发站:</label>
+                    <div class="uk-form-controls">
+                        <input v-model="BusFrom" type="text" maxlength="50" placeholder="始发站" class="uk-width-1-1">
+                    </div>
+                </div>
+                <div class="uk-form-row">
+                    <label class="uk-form-label">终点站:</label>
+                    <div class="uk-form-controls">
+                        <input v-model="BusTo" type="text" maxlength="50" placeholder="终点站" class="uk-width-1-1">
+                    </div>
+                </div>
+                <div class="uk-form-row">
+                    <label class="uk-form-label">发车时间:</label>
+                    <div class="uk-form-controls">
+                        <input v-model="BusDate" type="text" maxlength="50" placeholder="发车时间" class="uk-width-1-1">
+                    </div>
+                </div>
+                <div class="uk-form-row">
+                    <label class="uk-form-label">到达时间:</label>
+                    <div class="uk-form-controls">
+                        <input v-model="BusEnd" type="text" maxlength="50" placeholder="到达时间"
+                               class="uk-width-1-1">
+                    </div>
+                </div>
+
+                <div class="uk-form-row">
+                    <label class="uk-form-label">车票数:</label>
+                    <div class="uk-form-controls">
+                        <input v-model="NumTicket" type="tel" maxlength="50" placeholder="车票数"
+                               class="uk-width-1-1">
+                    </div>
+                </div>
+
+                <div class="uk-form-row">
+                    <label class="uk-form-label">票价(元）:</label>
+                    <div class="uk-form-controls">
+                        <input v-model="Price" type="text" maxlength="50" placeholder="票价"
+                               class="uk-width-1-1">
+                    </div>
+                </div>
+
+                <div class="uk-form-row">
+                    <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-user"></i> 确认添加</button>
+                </div>
+            </form>
+        </div>
+
+
+    </div>
+</div>
+
+
+</body>
+</html>

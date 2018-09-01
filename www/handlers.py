@@ -15,12 +15,15 @@ from www.config import configs
 COOKIE_NAME = 'awesession'  # cookie名，用于设置cookie
 _COOKIE_KEY = configs.session.secret  # cookie密钥，作为加密cookie原始字符串的一部分
 
+def check_admin(request):
+    if request.__user__ is None or not request.__user__.admin:
+        raise APIPermissionError()
 
 @get('/')
 def index(request):
     #print('来到首页'+request.__user__.UserID)  没问题
     return {
-        '__template__': 'tobuy.html',
+        '__template__': 'admin.html',
         '__user__': request.__user__
     }
 
@@ -197,4 +200,15 @@ def refund(*,UserID,OrderID):
     r.body = json.dumps(orders, ensure_ascii=True).encode('utf-8')
     return r
 
+@post('/manage/add_tickets')
+@asyncio.coroutine
+def add_tickets(*,BusID,BusFrom,BusTo,BusDate,BusEnd,TicketNum,Price,request):
+    check_admin(request)
+    b = Bus(BusID=BusID,BusFrom=BusFrom,BusTo=BusTo,BusDate=BusDate,BusEnd=BusEnd,TicketNum=TicketNum,Price=Price)
+    yield from b.save()
+
+    r = web.Response()
+    r.content_type = 'application/json'
+    r.body = json.dumps(b, ensure_ascii=True).encode('utf-8')
+    return r
 

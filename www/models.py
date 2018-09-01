@@ -14,6 +14,7 @@ class User(Model):
     Pass = StringField(ddl='varchar(50)')
     Sex = StringField(ddl='varchar(50)')
     Phone = StringField(ddl='char(11)')
+    Admin = BooleanField(default = False)
 
 class Bus(Model):
     __table__ = 'buses'
