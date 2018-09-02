@@ -1,16 +1,11 @@
 import re, time, json, logging, hashlib, base64, asyncio
-
 from www.coroweb import get, post
-
 from aiohttp import web
-
 from www.models import User, Bus, Order, next_id,Admin
-
 import www.markdown2  # 支持markdown文本输入的模块
-
 from www.apis import APIPermissionError, APISourceNotFoundError, APIValueError, APIError
-
 from www.config import configs
+
 
 COOKIE_NAME = 'awesession'  # cookie名，用于设置cookie
 _COOKIE_KEY = configs.session.secret  # cookie密钥，作为加密cookie原始字符串的一部分
@@ -19,6 +14,7 @@ def check_admin(request):
     if request.__user__ is None or not request.__user__.admin:
         raise APIPermissionError()
 
+'----------------------------------------------------------------首页-------------------------------------------------------------'
 @get('/')
 def index(request):
     #print('来到首页'+request.__user__.UserID)  没问题
@@ -239,9 +235,26 @@ def delete_tickets(*,BusID,BusDate):
     for b in bus:
         yield from b.remove()
 
-    buses = yield from Bus.findAll()
+    #buses = yield from Bus.findAll()
     r = web.Response()
-    r.content_type = 'application/json'
-    r.body = json.dumps(buses, ensure_ascii=True).encode('utf-8')
+    # r.content_type = 'application/json'
+    # r.body = json.dumps(buses, ensure_ascii=True).encode('utf-8')
     return r
 
+@get('/api/admin_users')
+@asyncio.coroutine
+def admin_users():
+    users = yield from User.findAll()
+    return {
+        '__template__':'users.html',
+        'users':users
+    }
+
+@post('/manage/users')
+@asyncio.coroutine
+def manage_users(*,UserID):
+    user = yield from User.find(UserID)
+    yield from user.remove()
+
+    r = web.Response()
+    return r

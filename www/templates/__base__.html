@@ -41,7 +41,22 @@
                 <ul class="uk-navbar-nav">
                     <li data-url="add"><a href="/api/admin_add_tickets"><i class="uk-icon-book"></i>添加车票</a></li>
                     <li data-url="delete"><a href="/api/admin_delete_tickets"><i class="uk-icon-check"></i>删除车票</a></li>
+                    <li data-url="delete_users"><a href="/api/admin_users"><i class="uk-icon-user"></i>管理用户</a></li>
                 </ul>
+
+                <div class="uk-navbar-flip">
+                    <ul class="uk-navbar-nav">
+
+                        <li class="uk-parent" data-uk-dropdown>
+                            <a href="#0"><i class="uk-icon-user"></i>Administrator</a>
+                            <div class="uk-dropdown uk-dropdown-navbar">
+                            <ul class="uk-nav uk-nav-navbar">
+                                <li><a href="/signout"><i class="uk-icon-sign-out"></i> 登出</a></li>
+                            </ul>
+                        </div>
+                        </li>
+                    </ul>
+                </div>
             {% else %}
                 <ul class="uk-navbar-nav">
                     <li data-url="tobuy"><a href="/"><i class="uk-icon-book"></i>购票</a></li>
@@ -50,14 +65,13 @@
                 <div class="uk-navbar-flip">
                     <ul class="uk-navbar-nav">
 
-                        <li class="uk-parent" data-uk-slideshow-slide>
+                        <li class="uk-parent" data-uk-dropdown>
                             <a href="#0"><i class="uk-icon-user"></i>{{ __user__.User }}</a>
                             <div class="uk-dropdown uk-dropdown-navbar">
-                                <ul class="uk-nav uk-nav-navbar">
-                                    <li><a href="/signout"><i class="uk-icon-sign-out"></i>登出</a></li>
-
-                                </ul>
-                            </div>
+                            <ul class="uk-nav uk-nav-navbar">
+                                <li><a href="/signout"><i class="uk-icon-sign-out"></i> 登出</a></li>
+                            </ul>
+                        </div>
                         </li>
                     </ul>
                 </div>

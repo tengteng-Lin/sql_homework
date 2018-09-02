@@ -1,10 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends '__base__.html' %}
+
+{% block title %}管理用户{% endblock %}
+
+{% block beforehead %}
+    <script>
+        function deleteUsers(obj){
+            var tr1 = obj.parentNode.parentNode;
+            var params = {
+                "UserID":tr1.cells[0].innerHTML,
+
+
+            };
+            console.log(params);
+
+
+            $.ajax({
+                url: '/manage/users',
+                method:'post',
+                data: params,
+                complete: function (data) {
+                    console.log(data)
+                },
+                success:function (data) {
+                    alert('删除成功！')
+                        refresh()
+
+                    console.log(data)
+                }}
+            );
+        }
+
+    </script>
+{% endblock %}
+
+{% block content %}
+
+
+    <table id="tickets">
+        <thead>
+        <tr>
+            <th scope="col">身份证号</th>
+            <th scope="col">用户名</th>
+            <th scope="col">手机号</th>
+            <th scope="col">性别</th>
+            <th scope="col">删除</th>
+
+
+        </tr>
+        </thead>
+        <tbody id="tbody">
+        {% for u in users %}
+            <tr>
+                <td>{{ u.UserID }}</td>
+                <td>{{ u.User }}</td>
+                <td>{{ u.Phone }}</td>
+                <td>{{ u.Sex }}</td>
+                <td><input type='button' id='sub' value='删除' onclick = 'deleteUsers(this)'/></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <style class="text/css">
+        #tickets {
+            font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+            font-size: 13px;
+            text-align: center;
+            margin: 45px;
+            width: 1000px;
+            border-collapse: collapse;
+        }
+
+        #tickets th {
+            font-size: 13px;
+            font-weight: normal;
+            text-align: center;
+            padding: 8px;
+            background: #b9c9fe;
+            border-top: 4px solid #aabcfe;
+            border-bottom: 1px solid #fff;
+            color: #039;
+        }
+
+        #tickets td {
+            padding: 8px;
+            background: #e8edff;
+            border-bottom: 1px solid #fff;
+            text-align: center;
+            color: #669;
+            border-top: 1px solid transparent;
+        }
+
+        #tickets tr:hover td {
+            background: #d0dafd;
+            color: #339;
+        }
+    </style>
+
+{% endblock %}
