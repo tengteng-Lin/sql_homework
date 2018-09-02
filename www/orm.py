@@ -43,7 +43,7 @@ async def select(sql,args,size=None):
     :return: 查询结果
     '''
     log(sql,args)
-    print('进入了select')
+
     global __pool
     # async调用一个子协程，并直接返回调用的结果。这里是从连接池中返回一个连接，这个地方已经创建了进程池并和进程池连接了，进程池的创建被封装到了create__pool函数里
     # async with是一个异步上下文管理器（是因为一异步都异步吗？
@@ -75,7 +75,7 @@ async def execute(sql,args,autocommit=True):
             await conn.begin() #python中连接对象开始一个事务的方法
         try:
             async with conn.cursor(aiomysql.DictCursor) as cur:
-                print(sql.replace('?', '%s'))
+
                 await cur.execute(sql.replace('?', '%s'), args)
                 affected = cur.rowcount #获取操作记录数
             if not autocommit:

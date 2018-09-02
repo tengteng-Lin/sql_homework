@@ -40,7 +40,7 @@
             {% if __user__.admin %}
                 <ul class="uk-navbar-nav">
                     <li data-url="add"><a href="/api/admin_add_tickets"><i class="uk-icon-book"></i>添加车票</a></li>
-                    <li data-url="delete"><a href="/manage/delete_tickets"><i class="uk-icon-check"></i>删除车票</a></li>
+                    <li data-url="delete"><a href="/api/admin_delete_tickets"><i class="uk-icon-check"></i>删除车票</a></li>
                 </ul>
             {% else %}
                 <ul class="uk-navbar-nav">

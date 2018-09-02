@@ -165,7 +165,7 @@ def api_query_buses(*, BusFrom, BusTo, BusDate):
 @post('/api/add_order')
 @asyncio.coroutine
 def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, OrderDate, OrderNum=1, Total=1):
-    print('添加订单')
+
     logging.info('添加订单。。。')
     order = Order(UserID=UserID, BusID=BusID, BusDate=BusDate, BusFrom=BusFrom, BusTo=BusTo)
     yield from order.save()
@@ -180,7 +180,7 @@ def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, OrderDate, OrderNum=1, 
 @asyncio.coroutine
 def my_order(request):
     orders = yield from Order.findAll('UserID=?', request.__user__.UserID)
-    print(orders)
+
     return {
         '__template__': 'refund.html',
         'orders': orders
@@ -201,7 +201,7 @@ def refund(*,UserID,OrderID):
 @post('/manage/add_tickets')
 @asyncio.coroutine
 def add_tickets(*,BusID,BusFrom,BusTo,BusDate,BusEnd,TicketNum,Price):
-    print('添加车票')
+
 
     b = Bus(BusID=BusID,BusFrom=BusFrom,BusTo=BusTo,BusDate=BusDate,BusEnd=BusEnd,TicketNum=TicketNum,Price=Price)
     yield from b.save()
@@ -216,3 +216,32 @@ def api_admin_add_tickets():
     return {
         '__template__':'admin.html'
     }
+
+@get('/api/admin_delete_tickets')
+@asyncio.coroutine
+def api_admin_delete_tickets():
+    buses =yield from Bus.findAll()
+
+    return {
+        '__template__':'delete_tickets.html',
+        'buses': buses
+    }
+
+@post('/manage/delete_tickets')
+@asyncio.coroutine
+def delete_tickets(*,BusID,BusDate):
+    logging.info('删除车票')
+    bus1 =yield from Bus.findAll('BusID=?',[BusID])
+    bus2 =yield from Bus.findAll('BusDate=?',[BusDate])
+    bus = [i for i in bus1 if i in bus2]
+    print(bus)
+
+    for b in bus:
+        yield from b.remove()
+
+    buses = yield from Bus.findAll()
+    r = web.Response()
+    r.content_type = 'application/json'
+    r.body = json.dumps(buses, ensure_ascii=True).encode('utf-8')
+    return r
+

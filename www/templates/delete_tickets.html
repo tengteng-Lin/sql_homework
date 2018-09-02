@@ -1,0 +1,107 @@
+{% extends '__base__.html' %}
+
+{% block title %}删除车票{% endblock %}
+
+{% block beforehead %}
+    <script>
+        function deleteTickets(obj){
+            var tr1 = obj.parentNode.parentNode;
+            var params = {
+                "BusID":tr1.cells[0].innerHTML,
+                //"BusFrom":tr1.cells[1].innerHTML,
+                "BusDate":tr1.cells[3].innerHTML
+
+            };
+            console.log(params);
+
+
+            $.ajax({
+                url: '/manage/delete_tickets',
+                method:'post',
+                data: params,
+                complete: function (data) {
+                    console.log(data)
+                },
+                success:function (data) {
+                    alert('删除成功！')
+                        refresh()
+
+                    console.log(data)
+                }}
+            );
+        }
+
+    </script>
+{% endblock %}
+
+{% block content %}
+
+
+    <table id="tickets">
+        <thead>
+        <tr>
+            <th scope="col">列车号</th>
+            <th scope="col">始发站</th>
+            <th scope="col">终点站</th>
+            <th scope="col">发车时间</th>
+            <th scope="col">到达时间</th>
+            <th scope="col">剩余票数</th>
+            <th scope="col">价格</th>
+            <th scope="col">删除</th>
+
+        </tr>
+        </thead>
+        <tbody id="tbody">
+        {% for bus in buses %}
+            <tr>
+                <td>{{ bus.BusID }}</td>
+                <td>{{ bus.BusFrom }}</td>
+                <td>{{ bus.BusTo }}</td>
+                <td>{{ bus.BusDate }}</td>
+                <td>{{ bus.BusEnd }}</td>
+                <td>{{ bus.TicketNum }}</td>
+                <td>{{ bus.Price }}</td>
+                <td><input type='button' id='sub' value='退票' onclick = 'deleteTickets(this)'/></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <style class="text/css">
+        #tickets {
+            font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+            font-size: 13px;
+            text-align: center;
+            margin: 45px;
+            width: 1000px;
+            border-collapse: collapse;
+        }
+
+        #tickets th {
+            font-size: 13px;
+            font-weight: normal;
+            text-align: center;
+            padding: 8px;
+            background: #b9c9fe;
+            border-top: 4px solid #aabcfe;
+            border-bottom: 1px solid #fff;
+            color: #039;
+        }
+
+        #tickets td {
+            padding: 8px;
+            background: #e8edff;
+            border-bottom: 1px solid #fff;
+            text-align: center;
+            color: #669;
+            border-top: 1px solid transparent;
+        }
+
+        #tickets tr:hover td {
+            background: #d0dafd;
+            color: #339;
+        }
+    </style>
+
+{% endblock %}
