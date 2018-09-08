@@ -5,11 +5,6 @@
 {% block beforehead %}
 
 <script>
-function duihua() {
-    alert('登录成功！')
-}
-
-
 $(function () {
     var vmAuth = new Vue({
         el: '#vm',
@@ -28,8 +23,15 @@ $(function () {
                     };
                 $form.postJSON('/api/authenticate', data, function (err, result) {
                     if (!err) {
-                        location.assign('/');
-                        duihua();
+                        alert('登录成功！');
+
+                        {% if __user__.admin  %}
+                            console.log('管理员登录')
+                            return location.assign('/api/admin_add_tickets')
+                        {% else %}
+                            console.log('用户')
+                            return location.assign('/');
+                        {% endif %}
 
                     }
                 });

@@ -24,12 +24,14 @@
     <link rel="stylesheet" href="/static/css/uikit.min.css">      <!--因为加“/”的意思是根目录下的绝对路径，不加“/”的意思是当前目录下的相对路径。-->
     <link rel="stylesheet" href="/static/css/uikit.gradient.min.css">   <!-- 绝对路径是指目录下的绝对位置,直接到达目标位置,通常是从盘符开始的路径。-->
     <link rel="stylesheet" href="/static/css/awesome.css">     <!--相对路径就是指由这个文件所在的路径引起的跟其它文件(或文件夹)的路径关系。-->
+    <link rel="stylesheet" href="/static/css/laydate.css">
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/sha1.min.js"></script>
     <script src="/static/js/uikit.min.js"></script>
     <script src="/static/js/sticky.min.js"></script>
     <script src="/static/js/vue.min.js"></script>
     <script src="/static/js/awesome.js"></script>
+    <script src="/static/js/laydate.js"></script>
     {% block beforehead %}<!--before head -->{% endblock %}
 </head>
 <body>
@@ -79,7 +81,6 @@
         {% else %}
             <ul class="uk-navbar-nav">
                 <li data-url="tobuy"><a href="/"><i class="uk-icon-book"></i>购票</a></li>
-                <li data-url="refund"><a href="/api/my_order"><i class="uk-icon-check"></i>退票</a></li>
             </ul>
             <div class="uk-navbar-flip">
                 <ul class="uk-navbar-nav">

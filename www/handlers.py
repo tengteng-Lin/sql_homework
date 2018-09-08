@@ -18,18 +18,29 @@ def check_admin(request):
 @get('/')
 def index(request):
     #print('来到首页'+request.__user__.UserID)  没问题
-    return {
-        '__template__': 'tobuy.html',
-        '__user__': request.__user__
-    }
+    if request.__user__:
+        if request.__user__.admin:
+            return {
+                '__template__': 'admin.html',
+                '__user__': request.__user__
+            }
+        else:
+            return {
+                '__template__': 'tobuy.html',
+                '__user__': request.__user__
+            }
+    else:
+        return {
+            '__template__': 'tobuy.html',
+            '__user__': request.__user__
+        }
 
-
+'----------------------------------------------------------------验证身份工具-------------------------------------------------------------'
 def user2cookie(user, max_age):
     expires = str(int(time.time() + max_age))
     s = '%s-%s-%s-%s' % (user.Phone, user.Pass, expires, _COOKIE_KEY)
     L = [user.Phone, expires, hashlib.sha1(s.encode('utf-8')).hexdigest()]
     return '-'.join(L)
-
 
 @asyncio.coroutine
 def cookie2user(cookie_str):
@@ -57,20 +68,18 @@ def cookie2user(cookie_str):
         logging.exception(e)
         return None
 
-
+'----------------------------------------------------------------登录注册退出-------------------------------------------------------------'
 @get('/register')
 def register():
     return {
         '__template__': "register.html"
     }
 
-
 @get('/signin')
 def signin():
     return {
         '__template__': 'signin2.html'
     }
-
 
 @post('/api/authenticate')
 @asyncio.coroutine  # 同理，教程中没有这一句
@@ -99,7 +108,6 @@ def authenticate(*, Phone, Pass):
     r.body = json.dumps(user, ensure_ascii=False).encode('utf-8')
     return r
 
-
 @get('/signout')
 def signout(request):
     referer = request.headers.get('Referer')
@@ -108,9 +116,7 @@ def signout(request):
     logging.info('user signed out')
     return r
 
-
 _RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
-
 
 @post('/api/users')
 @asyncio.coroutine  # 惹，这里和教程中有出入。是版本的问题还是？？ 如果没有这句，会出现“协程对象不可出现在非协程函数中”这样的错误。
@@ -139,7 +145,7 @@ def api_register_user(*, UserID, Phone, name, Pass):
     r.body = json.dumps(user, ensure_ascii=True).encode('utf-8')
     return r
 
-
+'----------------------------------------------------------------查询列车-------------------------------------------------------------'
 @post('/api/query_buses')
 @asyncio.coroutine
 def api_query_buses(*, BusFrom, BusTo, BusDate):
@@ -163,20 +169,31 @@ def api_query_buses(*, BusFrom, BusTo, BusDate):
 def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, OrderDate, OrderNum=1, Total=1):
 
     logging.info('添加订单。。。')
-    order = Order(UserID=UserID, BusID=BusID, BusDate=BusDate, BusFrom=BusFrom, BusTo=BusTo)
-    yield from order.save()
+    buses1 = yield from Bus.findAll('BusID=?', [BusID])
+    buses2 = yield from Bus.findAll('BusDate=?', [BusDate])
+    buses = [i for i in buses1 if i in buses2]
+    if buses[0].TicketNum!=0:
+        if buses[0].Num<50:
+            order = Order(UserID=UserID, BusID=BusID, BusDate=BusDate, BusFrom=BusFrom, BusTo=BusTo,Coach=buses[0].Coach,Num=buses[0].Num)
+            buses[0].Num+=1
+            buses[0].TicketNum-=1
+            yield from buses[0].update()
+            yield from order.save()
 
-    r = web.Response()
-    r.content_type = 'application/json'
-    r.body = json.dumps(order, ensure_ascii=True).encode('utf-8')
-    return r
+            L=[]
+            L.append(buses)
+            L.append(order)
+
+            r = web.Response()
+            r.content_type = 'application/json'
+            r.body = json.dumps(L, ensure_ascii=True).encode('utf-8')
+            return r
 
 
 @get('/api/my_order')
 @asyncio.coroutine
 def my_order(request):
     orders = yield from Order.findAll('UserID=?', request.__user__.UserID)
-
     return {
         '__template__': 'refund.html',
         'orders': orders
@@ -199,7 +216,7 @@ def refund(*,UserID,OrderID):
 def add_tickets(*,BusID,BusFrom,BusTo,BusDate,BusEnd,TicketNum,Price):
 
 
-    b = Bus(BusID=BusID,BusFrom=BusFrom,BusTo=BusTo,BusDate=BusDate,BusEnd=BusEnd,TicketNum=TicketNum,Price=Price)
+    b = Bus(BusID=BusID,BusFrom=BusFrom,BusTo=BusTo,BusDate=BusDate,BusEnd=BusEnd,TicketNum=TicketNum,Price=Price,Coach=1,Num=1)
     yield from b.save()
 
     r = web.Response()

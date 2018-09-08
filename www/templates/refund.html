@@ -43,6 +43,8 @@
             <th scope="col">始发站</th>
             <th scope="col">终点站</th>
             <th scope="col">发车日期</th>
+            <th scope="col">车厢号</th>
+            <th scope="col">座位号</th>
             <th scope="col">退票</th>
 
         </tr>
@@ -55,6 +57,8 @@
                 <td>{{ order.BusFrom }}</td>
                 <td>{{ order.BusTo }}</td>
                 <td>{{ order.BusDate }}</td>
+                <td>{{ order.Coach }}</td>
+                <td>{{ order.Num }}</td>
                 <td><input type='button' id='sub' value='退票' onclick = 'refund(this)'/></td>
             </tr>
         {% endfor %}
