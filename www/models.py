@@ -24,8 +24,8 @@ class Bus(Model):
     BusTo = StringField(ddl='varchar(50)')
     BusDate = StringField(ddl='varchar(50)')  #发车日期
     BusEnd = StringField(ddl='varchar(50)')
-    TicketNum = IntegerField() #剩余票数
-    Price = FloatField()  #票价
+
+
 
 class Order(Model):
     __table__='orders'
@@ -39,9 +39,15 @@ class Order(Model):
     OrderDate = FloatField(default=time.time)  #订购日期
     OrderNum = IntegerField(default=1)  #订购票数
     Total = FloatField(default=1)  #总价
+    Coach = IntegerField(default=1)  # 车厢号
+    Num = IntegerField(default=1)  # 车厢第几号
 
-class Admin(Model):
-    __table__='admins'
+class Seat(Model):
+    __table__='seats'
 
-    adminID = StringField(primary_key=True,ddl='varchar(50)')
-    password = StringField(ddl='varchar(50)')
+    BusID = StringField(primary_key=True,ddl='varchar(10)')
+    Type = StringField(ddl='varchar(10)')
+    TicketNum = IntegerField(default=0)
+    Price = FloatField(default=1)
+    Coach = IntegerField()  # 车厢号
+    Num = IntegerField()  # 车厢第几号

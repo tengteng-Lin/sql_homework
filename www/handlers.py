@@ -1,23 +1,26 @@
 import re, time, json, logging, hashlib, base64, asyncio
 from www.coroweb import get, post
 from aiohttp import web
-from www.models import User, Bus, Order, next_id,Admin
+from www.models import User, Bus, Order, next_id, Seat
 import www.markdown2  # 支持markdown文本输入的模块
 from www.apis import APIPermissionError, APISourceNotFoundError, APIValueError, APIError
 from www.config import configs
 
-
 COOKIE_NAME = 'awesession'  # cookie名，用于设置cookie
 _COOKIE_KEY = configs.session.secret  # cookie密钥，作为加密cookie原始字符串的一部分
+
 
 def check_admin(request):
     if request.__user__ is None or not request.__user__.admin:
         raise APIPermissionError()
 
+
 '----------------------------------------------------------------首页-------------------------------------------------------------'
+
+
 @get('/')
 def index(request):
-    #print('来到首页'+request.__user__.UserID)  没问题
+    # print('来到首页'+request.__user__.UserID)  没问题
     if request.__user__:
         if request.__user__.admin:
             return {
@@ -35,12 +38,16 @@ def index(request):
             '__user__': request.__user__
         }
 
+
 '----------------------------------------------------------------验证身份工具-------------------------------------------------------------'
+
+
 def user2cookie(user, max_age):
     expires = str(int(time.time() + max_age))
     s = '%s-%s-%s-%s' % (user.Phone, user.Pass, expires, _COOKIE_KEY)
     L = [user.Phone, expires, hashlib.sha1(s.encode('utf-8')).hexdigest()]
     return '-'.join(L)
+
 
 @asyncio.coroutine
 def cookie2user(cookie_str):
@@ -68,18 +75,23 @@ def cookie2user(cookie_str):
         logging.exception(e)
         return None
 
+
 '----------------------------------------------------------------登录注册退出-------------------------------------------------------------'
+
+
 @get('/register')
 def register():
     return {
         '__template__': "register.html"
     }
 
+
 @get('/signin')
 def signin():
     return {
         '__template__': 'signin2.html'
     }
+
 
 @post('/api/authenticate')
 @asyncio.coroutine  # 同理，教程中没有这一句
@@ -108,6 +120,7 @@ def authenticate(*, Phone, Pass):
     r.body = json.dumps(user, ensure_ascii=False).encode('utf-8')
     return r
 
+
 @get('/signout')
 def signout(request):
     referer = request.headers.get('Referer')
@@ -116,7 +129,9 @@ def signout(request):
     logging.info('user signed out')
     return r
 
+
 _RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
+
 
 @post('/api/users')
 @asyncio.coroutine  # 惹，这里和教程中有出入。是版本的问题还是？？ 如果没有这句，会出现“协程对象不可出现在非协程函数中”这样的错误。
@@ -145,7 +160,10 @@ def api_register_user(*, UserID, Phone, name, Pass):
     r.body = json.dumps(user, ensure_ascii=True).encode('utf-8')
     return r
 
+
 '----------------------------------------------------------------查询列车-------------------------------------------------------------'
+
+
 @post('/api/query_buses')
 @asyncio.coroutine
 def api_query_buses(*, BusFrom, BusTo, BusDate):
@@ -164,23 +182,26 @@ def api_query_buses(*, BusFrom, BusTo, BusDate):
     return r
 
 
+'----------------------------------------------------------------添加订单-------------------------------------------------------------'
+
+
 @post('/api/add_order')
 @asyncio.coroutine
 def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, OrderDate, OrderNum=1, Total=1):
-
     logging.info('添加订单。。。')
     buses1 = yield from Bus.findAll('BusID=?', [BusID])
     buses2 = yield from Bus.findAll('BusDate=?', [BusDate])
     buses = [i for i in buses1 if i in buses2]
-    if buses[0].TicketNum!=0:
-        if buses[0].Num<50:
-            order = Order(UserID=UserID, BusID=BusID, BusDate=BusDate, BusFrom=BusFrom, BusTo=BusTo,Coach=buses[0].Coach,Num=buses[0].Num)
-            buses[0].Num+=1
-            buses[0].TicketNum-=1
+    if buses[0].TicketNum != 0:
+        if buses[0].Num < 50:
+            order = Order(UserID=UserID, BusID=BusID, BusDate=BusDate, BusFrom=BusFrom, BusTo=BusTo,
+                          Coach=buses[0].Coach, Num=buses[0].Num)
+            buses[0].Num += 1
+            buses[0].TicketNum -= 1
             yield from buses[0].update()
             yield from order.save()
 
-            L=[]
+            L = []
             L.append(buses)
             L.append(order)
 
@@ -188,6 +209,37 @@ def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, OrderDate, OrderNum=1, 
             r.content_type = 'application/json'
             r.body = json.dumps(L, ensure_ascii=True).encode('utf-8')
             return r
+
+
+# @post('/api/details')
+# @asyncio.coroutine
+# def details(*,BusID):
+#     seats = yield from Seat.findAll('BusID=?',BusID)
+#     b=yield from Bus.find(BusID)
+#
+#     L=[]
+#     L.append(seats)
+#     L.append(b)
+#     r = web.Response()
+#     r.content_type = 'application/json'
+#     r.body = json.dumps(L, ensure_ascii=True).encode('utf-8')
+#     return L
+
+@get('/api/details/{BusID}')
+@asyncio.coroutine
+def details(*, BusID):
+    seats = yield from Seat.findAll('BusID=?', BusID)
+    b = yield from Bus.find(BusID)
+    return {
+        "__template__":"details.html",
+        "seats":seats,
+        "bus":b
+    }
+
+
+
+
+'----------------------------------------------------------------我的订单（退票页面）-------------------------------------------------------------'
 
 
 @get('/api/my_order')
@@ -199,9 +251,13 @@ def my_order(request):
         'orders': orders
     }
 
+
+'----------------------------------------------------------------退票操作-------------------------------------------------------------'
+
+
 @post('/api/refund')
 @asyncio.coroutine
-def refund(*,UserID,OrderID):
+def refund(*, UserID, OrderID):
     order = yield from Order.find(OrderID)
     yield from order.remove()
 
@@ -211,12 +267,15 @@ def refund(*,UserID,OrderID):
     r.body = json.dumps(orders, ensure_ascii=True).encode('utf-8')
     return r
 
+
+'----------------------------------------------------------------添加车票 操作及页面-------------------------------------------------------------'
+
+
 @post('/manage/add_tickets')
 @asyncio.coroutine
-def add_tickets(*,BusID,BusFrom,BusTo,BusDate,BusEnd,TicketNum,Price):
-
-
-    b = Bus(BusID=BusID,BusFrom=BusFrom,BusTo=BusTo,BusDate=BusDate,BusEnd=BusEnd,TicketNum=TicketNum,Price=Price,Coach=1,Num=1)
+def add_tickets(*, BusID, BusFrom, BusTo, BusDate, BusEnd, TicketNum, Price):
+    b = Bus(BusID=BusID, BusFrom=BusFrom, BusTo=BusTo, BusDate=BusDate, BusEnd=BusEnd, TicketNum=TicketNum, Price=Price,
+            Coach=1, Num=1)
     yield from b.save()
 
     r = web.Response()
@@ -224,52 +283,62 @@ def add_tickets(*,BusID,BusFrom,BusTo,BusDate,BusEnd,TicketNum,Price):
     r.body = json.dumps(b, ensure_ascii=True).encode('utf-8')
     return r
 
+
 @get('/api/admin_add_tickets')
 def api_admin_add_tickets():
     return {
-        '__template__':'admin.html'
+        '__template__': 'admin.html'
     }
+
+
+'----------------------------------------------------------------删除车票 操作及页面-------------------------------------------------------------'
+
 
 @get('/api/admin_delete_tickets')
 @asyncio.coroutine
 def api_admin_delete_tickets():
-    buses =yield from Bus.findAll()
+    buses = yield from Bus.findAll()
 
     return {
-        '__template__':'delete_tickets.html',
+        '__template__': 'delete_tickets.html',
         'buses': buses
     }
 
+
 @post('/manage/delete_tickets')
 @asyncio.coroutine
-def delete_tickets(*,BusID,BusDate):
-    logging.info('删除车票')
-    bus1 =yield from Bus.findAll('BusID=?',[BusID])
-    bus2 =yield from Bus.findAll('BusDate=?',[BusDate])
+def delete_tickets(*, BusID, BusDate):
+    bus1 = yield from Bus.findAll('BusID=?', [BusID])
+    bus2 = yield from Bus.findAll('BusDate=?', [BusDate])
     bus = [i for i in bus1 if i in bus2]
     print(bus)
 
     for b in bus:
         yield from b.remove()
 
-    #buses = yield from Bus.findAll()
+    # buses = yield from Bus.findAll()
     r = web.Response()
     # r.content_type = 'application/json'
     # r.body = json.dumps(buses, ensure_ascii=True).encode('utf-8')
     return r
+
+
+'----------------------------------------------------------------管理用户页面及删除操作-------------------------------------------------------------'
+
 
 @get('/api/admin_users')
 @asyncio.coroutine
 def admin_users():
     users = yield from User.findAll()
     return {
-        '__template__':'users.html',
-        'users':users
+        '__template__': 'users.html',
+        'users': users
     }
+
 
 @post('/manage/users')
 @asyncio.coroutine
-def manage_users(*,UserID):
+def manage_users(*, UserID):
     user = yield from User.find(UserID)
     yield from user.remove()
 

@@ -18,13 +18,11 @@ create table users(
 )engine=innodb DEFAULT charset=utf8;
 
 CREATE TABLE buses(
-    `BusID` VARCHAR (50) NOT NULL ,
+    `BusID` VARCHAR (10) NOT NULL ,
     `BusFrom` VARCHAR (50) NOT NULL ,
     `BusTo` VARCHAR (50) not NULL ,
     `BusDate` VARCHAR (50) NOT NULL,
     `BusEnd` VARCHAR (50) not NULL,
-    `TicketNum` int NOT NULL,
-    `Price` FLOAT NOT NULL,
     PRIMARY KEY (`BusID`,`BusDate`)
 )engine=innodb DEFAULT charset=utf8;
 
@@ -38,6 +36,18 @@ CREATE TABLE orders(
     `OrderDate` FLOAT NOT NULL ,
     `OrderNum` INT NOT NULL ,
     `Total` FLOAT NOT NULL,
-    PRIMARY KEY (`OrderID`)
-)engine=innodb DEFAULT charset=utf8
 
+    `Coach`INT NOT NULL ,
+    `Num`INT NOT NULL,
+    PRIMARY KEY (`OrderID`)
+)engine=innodb DEFAULT charset=utf8;
+
+CREATE TABLE seats(
+  `BusID` VARCHAR (10) NOT NULL ,
+  `Type` VARCHAR (10) NOT NULL ,
+  `TicketNum`INT NOT NULL ,
+  `Price`FLOAT NOT NULL ,
+  `Coach`INT ,
+  `Num`INT ,
+  PRIMARY KEY (`BusID`,`Type`)
+)engine=innodb DEFAULT charset=utf8

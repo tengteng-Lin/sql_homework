@@ -55,72 +55,82 @@
                 var td_BusTo = document.createElement('td')
                 var td_BusDate = document.createElement('td')
                 var td_BusEnd = document.createElement('td')
-                var td_TicketNum = document.createElement('td')
-                var td_Price = document.createElement('td')
+
                 var td_Order = document.createElement('td');
 
 
                 td_BusID.innerHTML = r[i].BusID;
+
                 td_BusFrom.innerHTML = r[i].BusFrom;
                 td_BusTo.innerHTML = r[i].BusTo;
                 td_BusDate.innerHTML = r[i].BusDate;
                 td_BusEnd.innerHTML = r[i].BusEnd;
-                td_TicketNum.innerHTML = r[i].TicketNum;
-                td_Price.innerHTML = r[i].Price;
-                td_Order.innerHTML = "<input type='button' id='sub' value='预定' onclick = 'javascript : make_order(this)'/>";
+
+                td_Order.innerHTML = "<p onclick=javascript:getDetails(this)><a>详情</a></p>";
+                td_Order.onclick=function () {
+                    getDetails(this)
+                }
 
                 tr.appendChild(td_BusID);
                 tr.appendChild(td_BusFrom);
                 tr.appendChild(td_BusTo);
                 tr.appendChild(td_BusDate);
                 tr.appendChild(td_BusEnd);
-                tr.appendChild(td_TicketNum);
-                tr.appendChild(td_Price);
                 tr.appendChild(td_Order);
 
 
                 var tbody = document.getElementById('tbody');
                 tbody.appendChild(tr);
+
+{#                document.getElementById(i).onclick=function () {#}
+{#                    var x=document.getElementById('tickets').rows[i].cells;#}
+{#                    //alert();#}
+{#                    location='/api/details/'+x[0].innerHTML#}
+{#                }#}
+
             }
         }
 
-        function make_order(obj) {
-            var tr1 = obj.parentNode.parentNode;
-            {% if  __user__ %}
-                var params = {
-                    "UserID":{{ __user__.UserID }},
-                    "BusID": tr1.cells[0].innerHTML,
-                    "OrderDate": 123,
-                    "BusDate": tr1.cells[3].innerHTML,
-                    'BusFrom': tr1.cells[1].innerHTML,
-                    'BusTo': tr1.cells[2].innerHTML
+        function getDetails(obj) {
+            var tr = obj.parentNode;
+            location = '/api/details/'+tr.cells[0].innerHTML;
 
-                };
-            {% else %}
-                alert('请先登录！');
-                return;
-            {% endif %}
-
-
-            console.log({{ __user__.UserID }});
-
-            $.ajax({
-                    url: '/api/add_order',
-                    method: 'post',
-                    data: params,
-                    complete: function (data) {
-                        console.log(data)
-                    },
-                    success: function (data) {
-                        alert('购票成功，购票数量x1，您的订单号为：' + data[1].OrderID)
-
-                        refresh2(data[0])
-                        console.log(data)
-
-                    }
-                }
-            );
         }
+
+{#        function details(obj) {#}
+{#            var tr1 = obj.parentNode.parentNode;#}
+{#            {% if  __user__ %}#}
+{#                var params = {#}
+{#                    "UserID":{{ __user__.UserID }},#}
+{#                    "BusID": tr1.cells[0].innerHTML,#}
+{#                    "OrderDate": 123,#}
+{#                    "BusDate": tr1.cells[3].innerHTML,#}
+{#                    "BusEnd": tr1.cells[4].innerHTML,#}
+{#                    'BusFrom': tr1.cells[1].innerHTML,#}
+{#                    'BusTo': tr1.cells[2].innerHTML#}
+{##}
+{#                };#}
+{#            {% else %}#}
+{#                alert('请先登录！');#}
+{#                return;#}
+{#            {% endif %}#}
+{#            window.location.href='/api/details'+BusID#}
+{##}
+{#            $.ajax({#}
+{#                    url: '/api/details',#}
+{#                    method: 'post',#}
+{#                    data: params,#}
+{#                    complete: function (data) {#}
+{#                        console.log(data)#}
+{#                    },#}
+{#                    success: function (data) {#}
+{#                        window.location.href='/api/details'+data#}
+{##}
+{##}
+{#                    }#}
+{#                }#}
+{#            );#}
+{#        }#}
 
 
     </script>
@@ -133,39 +143,6 @@
             <input v-model="BusFrom" type="text" size="55" placeholder="出发地点">
             <input v-model="BusTo" type="text" size="55" placeholder="到达地点">
             <input v-model="BusDate" type="date" size="55" placeholder="xxxx年xx月xx日">
-{#            <div class="laydate-box" style="width:55px;height:55px;margin:30px 0 0 40px">#}
-{#                <input v-model="BusDate" type="text" id="laydateInput" placeholder="xxxx年xx月xx日"/>#}
-{#                <img src="/static/images/calendar.png" alt="" class="icon data-icon">#}
-{#                <div class="select-date">#}
-{#                    <div class="select-date-header">#}
-{#                        <ul class="heade-ul">#}
-{#                            <li class="header-item header-item-one">#}
-{#                                <select name="" id="yearList"></select>#}
-{#                            </li>#}
-{#                            <li class="header-item header-item-two" onselectstart="return false">#}
-{#                                <select name="" id="monthList"></select>#}
-{#                            </li>#}
-{#                            <li class="header-item header-item-three" onselectstart="return false">#}
-{#                                <span class="reback">回到今天</span>#}
-{#                            </li>#}
-{#                        </ul>#}
-{#                    </div>#}
-{#                    <div class="select-date-body">#}
-{#                        <ul class="week-list">#}
-{#                            <li>日</li>#}
-{#                            <li>一</li>#}
-{#                            <li>二</li>#}
-{#                            <li>三</li>#}
-{#                            <li>四</li>#}
-{#                            <li>五</li>#}
-{#                            <li>六</li>#}
-{#                        </ul>#}
-{#                        <ul class="day-tabel"></ul>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-
-
             <button v-model="submit" class="uk-button uk-button-primary"><i class="uk-icon-user"></i> 查询</button>
         </form>
     </div><br>
@@ -179,9 +156,7 @@
             <th scope="col">到达站</th>
             <th scope="col">发车日期</th>
             <th scope="col">到达日期</th>
-            <th scope="col">剩余票数</th>
-            <th scope="col">票价</th>
-            <th scope="col">预定</th>
+            <th scope="col">详情</th>
         </tr>
         </thead>
         <tbody id="tbody">
