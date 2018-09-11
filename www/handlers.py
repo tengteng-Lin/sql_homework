@@ -273,10 +273,16 @@ def refund(*, UserID, OrderID):
 
 @post('/manage/add_tickets')
 @asyncio.coroutine
-def add_tickets(*, BusID, BusFrom, BusTo, BusDate, BusEnd, TicketNum, Price):
-    b = Bus(BusID=BusID, BusFrom=BusFrom, BusTo=BusTo, BusDate=BusDate, BusEnd=BusEnd, TicketNum=TicketNum, Price=Price,
-            Coach=1, Num=1)
+def add_tickets(*, BusID, BusFrom, BusTo, BusDate, BusEnd,oneNum,onePrice,twoNum,twoPrice,threeNum,threePrice):
+    b = Bus(BusID=BusID, BusFrom=BusFrom, BusTo=BusTo, BusDate=BusDate, BusEnd=BusEnd)
+
+    s1 = Seat(BusID=BusID,Type='一等座',TicketNum=oneNum,Price=onePrice,Coach=1,Num=1)
+    s2 = Seat(BusID=BusID, Type='二等座', TicketNum=twoNum, Price=twoPrice, Coach=1, Num=1)
+    s3 = Seat(BusID=BusID, Type='三等座', TicketNum=threeNum, Price=threePrice, Coach=1, Num=1)
     yield from b.save()
+    yield from s1.save()
+    yield from s2.save()
+    yield from s3.save()
 
     r = web.Response()
     r.content_type = 'application/json'
