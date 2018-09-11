@@ -31,23 +31,23 @@ class Order(Model):
     __table__='orders'
 
     OrderID = StringField(primary_key=True,default=next_id,ddl='char(50)')
-    UserID = StringField(ddl='char(50)')
+    UserID = StringField(ddl='varchar(50)')
     BusID = StringField(ddl='char(50)')
     BusFrom = StringField(ddl='varchar(50)')
     BusTo = StringField(ddl='varchar(50)')
     BusDate = StringField(ddl='varchar(50)')
-    OrderDate = FloatField(default=time.time)  #订购日期
-    OrderNum = IntegerField(default=1)  #订购票数
-    Total = FloatField(default=1)  #总价
+    Type = StringField(ddl='varchar(10)')  #几等座
     Coach = IntegerField(default=1)  # 车厢号
     Num = IntegerField(default=1)  # 车厢第几号
 
 class Seat(Model):
     __table__='seats'
 
-    BusID = StringField(primary_key=True,ddl='varchar(10)')
+    SeatID = StringField(primary_key=True,default=next_id,ddl='char(50)')
+    BusID = StringField(ddl='varchar(10)')
     Type = StringField(ddl='varchar(10)')
     TicketNum = IntegerField(default=0)
     Price = FloatField(default=1)
-    Coach = IntegerField()  # 车厢号
-    Num = IntegerField()  # 车厢第几号
+    Coach = IntegerField(default=1)  # 车厢号
+    Num = IntegerField(default=1)  # 车厢第几号
+

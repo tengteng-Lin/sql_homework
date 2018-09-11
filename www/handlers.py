@@ -187,43 +187,32 @@ def api_query_buses(*, BusFrom, BusTo, BusDate):
 
 @post('/api/add_order')
 @asyncio.coroutine
-def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, OrderDate, OrderNum=1, Total=1):
+def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, Type, OrderNum=1, Total=1):
     logging.info('添加订单。。。')
-    buses1 = yield from Bus.findAll('BusID=?', [BusID])
-    buses2 = yield from Bus.findAll('BusDate=?', [BusDate])
-    buses = [i for i in buses1 if i in buses2]
-    if buses[0].TicketNum != 0:
-        if buses[0].Num < 50:
+    seat1 = yield from Seat.findAll('BusID=?', [BusID])
+    seat2 = yield from Seat.findAll('Type=?', [Type])
+    seat = [i for i in seat1 if i in seat2]
+
+    if seat[0].TicketNum != 0:
+        if seat[0].Num < 50:
+            order = Order(UserID=UserID, BusID=BusID, BusDate=BusDate, BusFrom=BusFrom, BusTo=BusTo,Coach=seat[0].Coach, Num=seat[0].Num,Type=Type)
+            seat[0].Num += 1
+            seat[0].TicketNum -= 1
+            yield from seat[0].update()
+            yield from order.save()
+        else:
             order = Order(UserID=UserID, BusID=BusID, BusDate=BusDate, BusFrom=BusFrom, BusTo=BusTo,
-                          Coach=buses[0].Coach, Num=buses[0].Num)
-            buses[0].Num += 1
-            buses[0].TicketNum -= 1
-            yield from buses[0].update()
+                          Coach=seat[0].Coach, Num=seat[0].Num,Type=Type)
+            seat[0].Coach += 1
+            seat[0].Num = 1
+            seat[0].TicketNum -= 1
+            yield from seat[0].update()
             yield from order.save()
 
-            L = []
-            L.append(buses)
-            L.append(order)
-
-            r = web.Response()
-            r.content_type = 'application/json'
-            r.body = json.dumps(L, ensure_ascii=True).encode('utf-8')
-            return r
-
-
-# @post('/api/details')
-# @asyncio.coroutine
-# def details(*,BusID):
-#     seats = yield from Seat.findAll('BusID=?',BusID)
-#     b=yield from Bus.find(BusID)
-#
-#     L=[]
-#     L.append(seats)
-#     L.append(b)
-#     r = web.Response()
-#     r.content_type = 'application/json'
-#     r.body = json.dumps(L, ensure_ascii=True).encode('utf-8')
-#     return L
+        r = web.Response()
+        r.content_type = 'application/json'
+        r.body = json.dumps(order, ensure_ascii=True).encode('utf-8')
+        return r
 
 @get('/api/details/{BusID}')
 @asyncio.coroutine
@@ -231,12 +220,10 @@ def details(*, BusID):
     seats = yield from Seat.findAll('BusID=?', BusID)
     b = yield from Bus.find(BusID)
     return {
-        "__template__":"details.html",
-        "seats":seats,
-        "bus":b
+        "__template__": "details.html",
+        "seats": seats,
+        "bus": b
     }
-
-
 
 
 '----------------------------------------------------------------我的订单（退票页面）-------------------------------------------------------------'
@@ -245,6 +232,7 @@ def details(*, BusID):
 @get('/api/my_order')
 @asyncio.coroutine
 def my_order(request):
+    logging.info('我的订单')
     orders = yield from Order.findAll('UserID=?', request.__user__.UserID)
     return {
         '__template__': 'refund.html',
@@ -273,12 +261,12 @@ def refund(*, UserID, OrderID):
 
 @post('/manage/add_tickets')
 @asyncio.coroutine
-def add_tickets(*, BusID, BusFrom, BusTo, BusDate, BusEnd,oneNum,onePrice,twoNum,twoPrice,threeNum,threePrice):
+def add_tickets(*, BusID, BusFrom, BusTo, BusDate, BusEnd, oneNum, onePrice,oneCoach, twoNum, twoPrice,twoCoach, threeNum, threePrice,threeCoach):
     b = Bus(BusID=BusID, BusFrom=BusFrom, BusTo=BusTo, BusDate=BusDate, BusEnd=BusEnd)
 
-    s1 = Seat(BusID=BusID,Type='一等座',TicketNum=oneNum,Price=onePrice,Coach=1,Num=1)
-    s2 = Seat(BusID=BusID, Type='二等座', TicketNum=twoNum, Price=twoPrice, Coach=1, Num=1)
-    s3 = Seat(BusID=BusID, Type='三等座', TicketNum=threeNum, Price=threePrice, Coach=1, Num=1)
+    s1 = Seat(BusID=BusID, Type='一等座', TicketNum=oneNum, Price=onePrice, Coach=oneCoach, Num=1)
+    s2 = Seat(BusID=BusID, Type='二等座', TicketNum=twoNum, Price=twoPrice, Coach=twoCoach, Num=1)
+    s3 = Seat(BusID=BusID, Type='三等座', TicketNum=threeNum, Price=threePrice, Coach=threeCoach, Num=1)
     yield from b.save()
     yield from s1.save()
     yield from s2.save()
@@ -310,23 +298,42 @@ def api_admin_delete_tickets():
         'buses': buses
     }
 
+@get('/api/admin_delete/{BusID}')
+@asyncio.coroutine
+def details(*, BusID):
+    seats = yield from Seat.findAll('BusID=?', BusID)
+    b = yield from Bus.find(BusID)
+    return {
+        "__template__": "delete_details.html",
+        "seats": seats,
+        "bus": b
+    }
+
 
 @post('/manage/delete_tickets')
 @asyncio.coroutine
-def delete_tickets(*, BusID, BusDate):
+def delete_tickets(*, BusID, BusDate,BusEnd,oneNum, onePrice, twoNum, twoPrice, threeNum, threePrice):
     bus1 = yield from Bus.findAll('BusID=?', [BusID])
     bus2 = yield from Bus.findAll('BusDate=?', [BusDate])
+
+    seat = yield from Seat.find()
     bus = [i for i in bus1 if i in bus2]
-    print(bus)
+    bus[0].BusDate=BusDate
+    bus[0].BusEnd = BusEnd
 
-    for b in bus:
-        yield from b.remove()
+    bus[0].oneNum = oneNum
+    bus[0].twoNum = twoNum
+    bus[0].threeNum = threeNum
+    bus[0].onePrice = onePrice
+    bus[0].twoPrice = twoPrice
+    bus[0].threePrice = threePrice
 
-    # buses = yield from Bus.findAll()
+    yield from bus[0].update()
     r = web.Response()
-    # r.content_type = 'application/json'
-    # r.body = json.dumps(buses, ensure_ascii=True).encode('utf-8')
+    r.content_type = 'application/json'
+    r.body = json.dumps(bus[0], ensure_ascii=True).encode('utf-8')
     return r
+
 
 
 '----------------------------------------------------------------管理用户页面及删除操作-------------------------------------------------------------'

@@ -28,26 +28,24 @@ CREATE TABLE buses(
 
 CREATE TABLE orders(
     `OrderID` VARCHAR (50) NOT NULL ,
-    `UserID` VARCHAR (18) NOT NULL ,
+    `UserID` VARCHAR (50) NOT NULL ,
     `BusID` VARCHAR (10) NOT NULL ,
     `BusFrom`VARCHAR (50)NOT NULL ,
     `BusTo`VARCHAR (50)NOT NULL ,
     `BusDate` VARCHAR (50) NOT NULL ,
-    `OrderDate` FLOAT NOT NULL ,
-    `OrderNum` INT NOT NULL ,
-    `Total` FLOAT NOT NULL,
-
+    `Type` VARCHAR (10) NOT NULL ,
     `Coach`INT NOT NULL ,
     `Num`INT NOT NULL,
     PRIMARY KEY (`OrderID`)
 )engine=innodb DEFAULT charset=utf8;
 
 CREATE TABLE seats(
+  `SeatID` VARCHAR (50) NOT NULL ,
   `BusID` VARCHAR (10) NOT NULL ,
   `Type` VARCHAR (10) NOT NULL ,
   `TicketNum`INT NOT NULL ,
   `Price`FLOAT NOT NULL ,
   `Coach`INT ,
   `Num`INT ,
-  PRIMARY KEY (`BusID`,`Type`)
+  PRIMARY KEY (`SeatID`)
 )engine=innodb DEFAULT charset=utf8

@@ -6,29 +6,7 @@
     <script>
         function deleteTickets(obj){
             var tr1 = obj.parentNode.parentNode;
-            var params = {
-                "BusID":tr1.cells[0].innerHTML,
-                //"BusFrom":tr1.cells[1].innerHTML,
-                "BusDate":tr1.cells[3].innerHTML
-
-            };
-            console.log(params);
-
-
-            $.ajax({
-                url: '/manage/delete_tickets',
-                method:'post',
-                data: params,
-                complete: function (data) {
-                    console.log(data)
-                },
-                success:function (data) {
-                    alert('删除成功！')
-                        refresh()
-
-                    console.log(data)
-                }}
-            );
+            location = '/api/admin_delete/'+tr1.cells[0].innerHTML;
         }
 
     </script>
@@ -45,9 +23,7 @@
             <th scope="col">终点站</th>
             <th scope="col">发车时间</th>
             <th scope="col">到达时间</th>
-            <th scope="col">剩余票数</th>
-            <th scope="col">价格</th>
-            <th scope="col">删除</th>
+            <th scope="col">修改</th>
 
         </tr>
         </thead>
@@ -59,9 +35,7 @@
                 <td>{{ bus.BusTo }}</td>
                 <td>{{ bus.BusDate }}</td>
                 <td>{{ bus.BusEnd }}</td>
-                <td>{{ bus.TicketNum }}</td>
-                <td>{{ bus.Price }}</td>
-                <td><input type='button' id='sub' value='删除' onclick = 'deleteTickets(this)'/></td>
+                <td><input type='button' id='sub' value='修改' onclick = 'deleteTickets(this)'/></td>
             </tr>
         {% endfor %}
         </tbody>
