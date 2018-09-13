@@ -4,10 +4,12 @@
 
 {% block beforehead %}
     <script>
-        function deleteTickets(obj){
+        function updateTickets(obj){
             var tr1 = obj.parentNode.parentNode;
             location = '/api/admin_delete/'+tr1.cells[0].innerHTML;
         }
+
+
 
     </script>
 {% endblock %}
@@ -35,7 +37,7 @@
                 <td>{{ bus.BusTo }}</td>
                 <td>{{ bus.BusDate }}</td>
                 <td>{{ bus.BusEnd }}</td>
-                <td><input type='button' id='sub' value='修改' onclick = 'deleteTickets(this)'/></td>
+                <td><input type='button' id='sub' value='修改' onclick = 'updateTickets(this)'/></td>
             </tr>
         {% endfor %}
         </tbody>

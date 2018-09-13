@@ -217,6 +217,7 @@ def add_order(*, UserID, BusID, BusFrom, BusTo, BusDate, Type, OrderNum=1, Total
 @get('/api/details/{BusID}')
 @asyncio.coroutine
 def details(*, BusID):
+    logging.info(BusID)
     seats = yield from Seat.findAll('BusID=?', BusID)
     b = yield from Bus.find(BusID)
     return {
@@ -300,7 +301,7 @@ def api_admin_delete_tickets():
 
 @get('/api/admin_delete/{BusID}')
 @asyncio.coroutine
-def details(*, BusID):
+def delete_details(*, BusID):
     seats = yield from Seat.findAll('BusID=?', BusID)
     b = yield from Bus.find(BusID)
     return {
@@ -310,29 +311,53 @@ def details(*, BusID):
     }
 
 
-@post('/manage/delete_tickets')
+@post('/manage/update_tickets')
 @asyncio.coroutine
-def delete_tickets(*, BusID, BusDate,BusEnd,oneNum, onePrice, twoNum, twoPrice, threeNum, threePrice):
+def update_tickets(*, BusID, BusDate,BusEnd,oneNum, onePrice, twoNum, twoPrice, threeNum, threePrice):
     bus1 = yield from Bus.findAll('BusID=?', [BusID])
     bus2 = yield from Bus.findAll('BusDate=?', [BusDate])
 
-    seat = yield from Seat.find()
+    seat = yield from Seat.findAll('BusID=?',[BusID])
     bus = [i for i in bus1 if i in bus2]
     bus[0].BusDate=BusDate
     bus[0].BusEnd = BusEnd
 
-    bus[0].oneNum = oneNum
-    bus[0].twoNum = twoNum
-    bus[0].threeNum = threeNum
-    bus[0].onePrice = onePrice
-    bus[0].twoPrice = twoPrice
-    bus[0].threePrice = threePrice
+    for s in seat:
+        if s.Type=='一等座':
+            s.TicketNum = oneNum
+            s.Price = onePrice
+        elif s.Type=='二等座':
+            s.TicketNum = twoNum
+            s.Price = twoPrice
+
+        elif s.Type=='三等座':
+            s.TicketNum = threeNum
+            s.Price = threePrice
+        yield from s.update()
 
     yield from bus[0].update()
     r = web.Response()
     r.content_type = 'application/json'
     r.body = json.dumps(bus[0], ensure_ascii=True).encode('utf-8')
     return r
+
+@post('/manage/delete_tickets')
+@asyncio.coroutine
+def delete_tickets(*,BusID,BusDate,BusFrom='1',BusTo='1',BusEnd='1'):
+    logging.info('删除车票')
+    bus1 = yield from Bus.findAll('BusID=?',[BusID])
+    bus2 = yield from Bus.findAll('BusDate=?',[BusDate])
+    bus = [i for i in bus1 if i in bus2]
+    yield from bus[0].remove()
+
+    seats = yield from Seat.findAll('BusID=?',[BusID])
+    for s in seats:
+        yield from s.remove()
+
+    r = web.Response()
+    return r
+
+
 
 
 

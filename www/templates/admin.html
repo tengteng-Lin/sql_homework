@@ -16,10 +16,13 @@
                     BusEnd:'',
                     oneNum:'',
                     onePrice:'',
+                    oneCoach:'',
                     twoNum:'',
                     twoPrice:'',
+                    twoCoach:'',
                     threeNum:'',
-                    threePrice:''
+                    threePrice:'',
+                    threeCoach:''
                 },
                 methods: {
                     submit: function (event) {
@@ -56,10 +59,13 @@
                             BusEnd:this.BusEnd,
                             oneNum:this.oneNum,
                             onePrice:this.onePrice,
+                            oneCoach:this.oneCoach,
                             twoNum:this.twoNum,
                             twoPrice:this.twoPrice,
+                            twoCoach:this.twoCoach,
                             threeNum:this.threeNum,
-                            threePrice:this.threePrice
+                            threePrice:this.threePrice,
+                            threeCoach:this.threeCoach
                         }, function (err, r) {
                             if (err) {
                                 return $form.showFormError(err);
@@ -125,6 +131,8 @@
                                class="uk-width-1-1">
                         <input v-model="onePrice" type="tel" maxlength="50" placeholder="价格"
                                class="uk-width-1-1">
+                        <input v-model="oneCoach" type="tel" maxlength="50" placeholder="车厢开始"
+                               class="uk-width-1-1">
                     </div>
                 </div>
 
@@ -135,6 +143,8 @@
                                class="uk-width-1-1">
                         <input v-model="twoPrice" type="tel" maxlength="50" placeholder="价格"
                                class="uk-width-1-1">
+                        <input v-model="twoCoach" type="tel" maxlength="50" placeholder="车厢开始"
+                               class="uk-width-1-1">
                     </div>
                 </div>
 
@@ -144,6 +154,8 @@
                         <input v-model="threeNum" type="tel" maxlength="50" placeholder="车票数"
                                class="uk-width-1-1">
                         <input v-model="threePrice" type="tel" maxlength="50" placeholder="价格"
+                               class="uk-width-1-1">
+                        <input v-model="threeCoach" type="tel" maxlength="50" placeholder="车厢开始"
                                class="uk-width-1-1">
                     </div>
                 </div>

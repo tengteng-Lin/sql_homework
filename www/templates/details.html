@@ -8,30 +8,33 @@
             var vm = new Vue({
                 el: '#vm',
                 data: {
-                    {#                    BusFrom: '',#}
-                    {#                    BusTo: '',#}
-                    {#                    BusDate: ''#}
+                    "UserID":'',
+                    "BusID":'',
+                    "BusFrom":'',
+                    "BusDate":'',
+                    "BusTo":'',
+                    "Type":''
                 },
                 methods: {
                     submit: function (event) {
                         event.preventDefault();
                         var $form = $('#vm');
 
-                        if (!this.BusFrom) {
-                            return $form.showFormError('请输入始发地！');
-                        }
-                        if (!this.BusTo) {
-                            return $form.showFormError('请输入目的地！');
-                        }
-                        $form.postJSON('/api/query_buses', {
+
+                        $form.postJSON('/api/add_order', {
                             BusFrom: this.BusFrom,
                             BusTo: this.BusTo,
-                            BusDate: this.BusDate
+                            BusDate: this.BusDate,
+                            UserID:{{ __user__.UserID }},
+                            Type:this.Type.substring(0,3),
+                            BusID:this.BusID
+
+
                         }, function (err, r) {
                             if (err) {
                                 return $form.showFormError(err);
                             }
-                            refresh2(r);
+                            alert('预订成功！')
                         });
                     }
                 }
@@ -39,15 +42,6 @@
             $('#vm').show();
         });
 
-{#        $("#type").change(function () {#}
-{#            console.log('jinlai')#}
-{#            var opt = $("#type").find("option:selected").text();#}
-{#            console.log(opt);#}
-{#            if (opt.substring(0, 1) == '一'){#}
-{#                $("#price").val({{ seats[0].Price }})#}
-{#            }#}
-{##}
-{#        });#}
 
         function getType() {
             $("#price").val('');
@@ -64,18 +58,6 @@
             }
         }
 
-{##}
-{#        var getType = function (t) {#}
-{#            var checkText = $("#type").find("option:selected").text();#}
-{#            if (t.value == '') {#}
-{#                {#}
-{#                    t.value =#}
-{#                    {{ seats[0].Price }}#}
-{##}
-{#                }#}
-{##}
-{#            }#}
-{#        }#}
 
 
     </script>

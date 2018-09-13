@@ -8,18 +8,17 @@
             var vm = new Vue({
                 el: '#vm',
                 data: {
-                    BusID:'',
+                    BusID: '',
+                    BusDate: '',
+                    BusEnd: '',
+                    oneNum: '',
+                    onePrice: '',
 
-                    BusDate:'',
-                    BusEnd:'',
-                    oneNum:'',
-                    onePrice:'',
+                    twoNum: '',
+                    twoPrice: '',
 
-                    twoNum:'',
-                    twoPrice:'',
-
-                    threeNum:'',
-                    threePrice:'',
+                    threeNum: '',
+                    threePrice: '',
 
                 },
                 methods: {
@@ -28,21 +27,20 @@
                         var $form = $('#vm');
 
 
-                        $form.postJSON('/manage/delete_tickets', {
+                        $form.postJSON('/manage/update_tickets', {
                             BusID: this.BusID,
 
-                            BusDate:this.BusDate,
-                            BusEnd:this.BusEnd,
+                            BusDate: this.BusDate,
+                            BusEnd: this.BusEnd,
 
-                            oneNum:this.oneNum,
-                            onePrice:this.onePrice,
+                            oneNum: this.oneNum,
+                            onePrice: this.onePrice,
 
-                            twoNum:this.twoNum,
-                            twoPrice:this.twoPrice,
+                            twoNum: this.twoNum,
+                            twoPrice: this.twoPrice,
 
-                            threeNum:this.threeNum,
-                            threePrice:this.threePrice,
-
+                            threeNum: this.threeNum,
+                            threePrice: this.threePrice,
 
 
                         }, function (err, r) {
@@ -50,6 +48,7 @@
                                 return $form.showFormError(err);
                             }
                             alert('修改成功！')
+                            refresh();
                         });
                     }
                 }
@@ -57,22 +56,51 @@
             $('#vm').show();
         });
 
+        function deleteTickets() {
+
+            var params = {
+                "BusID":$("#BusID").val(),
+                "BusDate":$("#BusDate").val(),
+                "BusFrom":'1',
+                "BusTo":'1',
+                "BusEnd":'1'
+            };
+            console.log(params);
+
+            $.ajax({
+                url:"/manage/delete_tickets",
+                method:'post',
+                data:params,
+                success:function (data) {
+                    alert('删除成功！');
+                    refresh();
+                },
+                complete :function (data) {
+                    console.log(data);
+
+                }
+
+
+            });
+
+
+        }
+
 
         function getType() {
             $("#price").val('');
             var opt = $("#type").find("option:selected").text();
             console.log(opt);
-            if (opt.substring(0, 1) == '一'){
+            if (opt.substring(0, 1) == '一') {
                 $("#price").val({{ seats[0].Price }})
             }
-            else if (opt.substring(0, 1) == '二'){
+            else if (opt.substring(0, 1) == '二') {
                 $("#price").val({{ seats[1].Price }})
             }
-            else if (opt.substring(0, 1) == '三'){
+            else if (opt.substring(0, 1) == '三') {
                 $("#price").val({{ seats[2].Price }})
             }
         }
-
 
 
     </script>
@@ -91,7 +119,7 @@
                 <div class="uk-form-row">
                     <label class="uk-form-label">列车号:</label>
                     <div class="uk-form-controls">
-                        <input v-model="BusID" type="text" maxlength="50" value={{ bus.BusID }} class="uk-width-1-1">
+                        <input v-model="BusID" id='BusID' type="text" maxlength="50" value={{ bus.BusID }} class="uk-width-1-1">
                     </div>
                 </div>
                 <div class="uk-form-row">
@@ -110,7 +138,7 @@
                 <div class="uk-form-row">
                     <label class="uk-form-label">发车时间:</label>
                     <div class="uk-form-controls">
-                        <input v-model="BusDate" type="date" maxlength="50"
+                        <input v-model="BusDate" type="date" maxlength="50" id="BusDate"
                                value={{ bus.BusDate }} class="uk-width-1-1">
                     </div>
                 </div>
@@ -124,30 +152,34 @@
                 <div class="uk-form-row">
                     <label class="uk-form-label">一等座:</label>
                     <div class="uk-form-controls">
-                        <input v-model="oneNum" type="tel" maxlength="50" placeholder="车票数" value={{ seats[0].TicketNum}}
-                               class="uk-width-1-1">
+                        <input v-model="oneNum" type="tel" maxlength="50" placeholder="车票数"
+                               value={{ seats[0].TicketNum }}
+                                       class="uk-width-1-1">
                         <input v-model="onePrice" type="tel" maxlength="50" placeholder="价格" value={{ seats[0].Price }}
-                               class="uk-width-1-1">
+                                class="uk-width-1-1">
                     </div>
                 </div>
 
                 <div class="uk-form-row">
                     <label class="uk-form-label">二等座:</label>
                     <div class="uk-form-controls">
-                        <input v-model="twoNum" type="tel" maxlength="50" placeholder="车票数" value={{ seats[1].TicketNum }}
-                               class="uk-width-1-1">
+                        <input v-model="twoNum" type="tel" maxlength="50" placeholder="车票数"
+                               value={{ seats[1].TicketNum }}
+                                       class="uk-width-1-1">
                         <input v-model="twoPrice" type="tel" maxlength="50" placeholder="价格" value={{ seats[1].Price }}
-                               class="uk-width-1-1">
+                                class="uk-width-1-1">
                     </div>
                 </div>
 
                 <div class="uk-form-row">
                     <label class="uk-form-label">三等座:</label>
                     <div class="uk-form-controls">
-                        <input v-model="threeNum" type="tel" maxlength="50" placeholder="车票数" value={{ seats[2].TicketNum }}
-                               class="uk-width-1-1">
-                        <input v-model="threePrice" type="tel" maxlength="50" placeholder="价格" value={{ seats[2].Price }}
-                               class="uk-width-1-1">
+                        <input v-model="threeNum" type="tel" maxlength="50" placeholder="车票数"
+                               value={{ seats[2].TicketNum }}
+                                       class="uk-width-1-1">
+                        <input v-model="threePrice" type="tel" maxlength="50" placeholder="价格"
+                               value={{ seats[2].Price }}
+                                       class="uk-width-1-1">
                     </div>
                 </div>
 
@@ -155,8 +187,13 @@
                 <div class="uk-form-row">
                     <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-user"></i>确认修改</button>
                 </div>
+
+
             </div>
         </form>
+        <div >
+                    <button class="uk-button uk-button-primary" onclick="deleteTickets()"><i class="uk-icon-user"></i>删除车辆</button>
+                </div>
     </div>
 
 
